@@ -87,7 +87,34 @@ describe('KerusiSeatmapComponent', () => {
 
   const seats = () => [...el.querySelectorAll<SVGGElement>('g.kerusi-seat')];
   const seat = (id: string) => el.querySelector<SVGGElement>(`[data-seat-id="${id}"]`)!;
-  const svgs = () => [...el.querySelectorAll('svg')];
+  const svgs = () => [...el.querySelectorAll<SVGSVGElement>('svg.kerusi-section-svg')];
+  const box = (id: string) => seat(id).querySelector<SVGPathElement>('.kerusi-seat__box')!;
+
+  /**
+   * Every on-curve point in a `d` string, as a flat `[x0, y0, x1, y1, ...]`
+   * list — mirrors the helper in `seat-shapes.spec.ts`. Skips an `A`
+   * command's `rx ry x-axis-rotation large-arc-flag sweep-flag` numbers,
+   * which are not coordinates and are frequently 0 — indistinguishable from a
+   * real minimum if left in.
+   */
+  const pathPoints = (d: string): number[] => {
+    const out: number[] = [];
+    const tokens = d.trim().split(/\s+/);
+    let i = 0;
+    while (i < tokens.length) {
+      const cmd = tokens[i];
+      if (cmd === 'M' || cmd === 'L') {
+        out.push(Number(tokens[i + 1]), Number(tokens[i + 2]));
+        i += 3;
+      } else if (cmd === 'A') {
+        out.push(Number(tokens[i + 6]), Number(tokens[i + 7]));
+        i += 8;
+      } else {
+        i += 1;
+      }
+    }
+    return out;
+  };
 
   describe('sections as render units', () => {
     it('renders one svg per section, in Section.index order', () => {
@@ -346,18 +373,77 @@ describe('KerusiSeatmapComponent', () => {
       host.showLegend.set(true);
       fixture.detectChanges();
       const swatch = el.querySelector<HTMLElement>('.kerusi-legend__swatch')!;
-      const seatBox = seat('A1').querySelector('rect')!;
-      expect(seatBox.getAttribute('fill')).toBe('#3a8f63');
+      expect(box('A1').style.fill).toBe('rgb(58, 143, 99)');
       expect(swatch.style.background).toBe('rgb(58, 143, 99)');
+    });
+
+    it('draws every availability swatch as the seat glyph, not a flat colour', () => {
+      // Shape carries status now, so a flat swatch would teach a cue the map
+      // itself no longer uses — every status row draws the glyph instead.
+      host.showLegend.set(true);
+      fixture.detectChanges();
+      const glyphFor = (label: string) =>
+        [...el.querySelectorAll('.kerusi-legend__item')]
+          .find((li) => li.querySelector('.kerusi-legend__label')?.textContent?.trim() === label)!
+          .querySelector('.kerusi-legend__swatch--glyph')!;
+
+      expect(glyphFor('Available').tagName.toLowerCase()).toBe('svg');
+
+      // Body only: nothing occupies an available or a blocked seat.
+      expect(glyphFor('Available').querySelectorAll('path')).toHaveLength(1);
+      expect(glyphFor('Blocked').querySelectorAll('path')).toHaveLength(1);
+
+      // Body + ring + occupant: the one status with a ring.
+      expect(glyphFor('Selected').querySelectorAll('path')).toHaveLength(3);
+
+      // Body + wash + occupant.
+      expect(glyphFor('On hold').querySelectorAll('path')).toHaveLength(3);
+      expect(glyphFor('On hold').querySelector('.kerusi-legend__occupant--held')).not.toBeNull();
+      expect(glyphFor('Booked').querySelectorAll('path')).toHaveLength(3);
+      expect(glyphFor('Booked').querySelector('.kerusi-legend__occupant--booked')).not.toBeNull();
     });
   });
 
   describe('seat fills', () => {
     it('colors an available seat from its SeatType.color (§4.7)', () => {
-      expect(seat('A1').querySelector('rect')!.getAttribute('fill')).toBe('#3a8f63');
+      expect(box('A1').style.fill).toBe('rgb(58, 143, 99)');
     });
 
-    it('lets availability outrank the type color', () => {
+    it('routes theme colors through a CSS custom property, keeping the input as fallback', () => {
+      // The sofa type declares no color, so L1's fill comes from the theme.
+      expect(box('L1').style.fill).toBe('var(--kerusi-available-bg, #76d75d)');
+    });
+
+    it('publishes focusRing, so the focus ring is themable', () => {
+      // Under `--kerusi-focus-ring`, which a stylesheet may set to win outright.
+      expect(svgs()[0].style.getPropertyValue('--kerusi-focus-ring-input')).toBe('#1b1f27');
+    });
+  });
+
+  describe('status marks', () => {
+    // Colour means seat type; shape means status (see the doc comment on
+    // seatFill). A held or booked seat used to lose its type colour to a
+    // status hue, exactly where a busy map needed the type colour most, so
+    // these assert the opposite: the colour stays, and status is read from a
+    // wash plus an occupant figure instead.
+
+    it('keeps its type color when held, marking the hold with a wash and a hollow occupant', () => {
+      host.state.set({
+        kerusi: '1.0',
+        mapId: 'venue',
+        updatedAt: 't',
+        seats: { A1: { status: 'held' } },
+      });
+      fixture.detectChanges();
+      expect(box('A1').style.fill).toBe('rgb(58, 143, 99)');
+      expect(seat('A1').querySelector('.kerusi-seat__wash')).not.toBeNull();
+      const occupant = seat('A1').querySelector<SVGPathElement>('.kerusi-seat__occupant--held')!;
+      expect(occupant).not.toBeNull();
+      expect(occupant.style.fill).toBe('none');
+      expect(occupant.style.stroke).not.toBe('none');
+    });
+
+    it('keeps its type color when booked, marking the sale with a wash and a solid occupant', () => {
       host.state.set({
         kerusi: '1.0',
         mapId: 'venue',
@@ -365,7 +451,73 @@ describe('KerusiSeatmapComponent', () => {
         seats: { A1: { status: 'booked' } },
       });
       fixture.detectChanges();
-      expect(seat('A1').querySelector('rect')!.getAttribute('fill')).not.toBe('#3a8f63');
+      expect(box('A1').style.fill).toBe('rgb(58, 143, 99)');
+      expect(seat('A1').querySelector('.kerusi-seat__wash')).not.toBeNull();
+      const occupant = seat('A1').querySelector<SVGPathElement>('.kerusi-seat__occupant--booked')!;
+      expect(occupant).not.toBeNull();
+      expect(occupant.style.stroke).toBe('none');
+      expect(occupant.style.fill).not.toBe('none');
+    });
+
+    it('draws no wash and no occupant for a blocked seat, since nobody is there', () => {
+      host.state.set({
+        kerusi: '1.0',
+        mapId: 'venue',
+        updatedAt: 't',
+        seats: { A1: { status: 'blocked' } },
+      });
+      fixture.detectChanges();
+      expect(seat('A1').querySelector('.kerusi-seat__wash')).toBeNull();
+      expect(seat('A1').querySelector('.kerusi-seat__occupant')).toBeNull();
+    });
+
+    it('lets selection win the fill outright, the one deliberate exception', () => {
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+      expect(box('A1').style.fill).toBe('var(--kerusi-selected-bg, #7854af)');
+    });
+  });
+
+  describe('the seat glyph', () => {
+    it('gives every seat a tapered body, so facing is visible on the shape', () => {
+      const boxes = seats().map((g) => g.querySelector<SVGPathElement>('.kerusi-seat__box')!);
+      expect(boxes).toHaveLength(seats().length);
+      for (const b of boxes) {
+        expect(b.tagName.toLowerCase()).toBe('path');
+        // Four rounded corners: an L onto each incoming edge, an A arc onto each outgoing one.
+        expect(b.getAttribute('d')?.match(/A /g)).toHaveLength(4);
+      }
+    });
+
+    it('marks a selected seat by shape as well as color', () => {
+      expect(seat('A1').querySelector('.kerusi-seat__occupant')).toBeNull();
+      expect(seat('A1').querySelector('.kerusi-seat__ring')).toBeNull();
+
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+
+      expect(seat('A1').querySelector('.kerusi-seat__occupant--selected')).not.toBeNull();
+      expect(seat('A1').querySelector('.kerusi-seat__ring')).not.toBeNull();
+      expect(seat('A2').querySelector('.kerusi-seat__occupant')).toBeNull();
+    });
+
+    it('leans the occupant with the seat while the number stays upright', () => {
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+      const g = seat('A1');
+      // The label cancels the group's rotation; the occupant inherits it.
+      expect(g.querySelector('.kerusi-seat__occupant')!.getAttribute('transform')).toBeNull();
+      expect(g.querySelector('.kerusi-seat__label')).not.toBeNull();
+    });
+
+    it('keeps the selected ring inside the seat body', () => {
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+      const ring = seat('A1').querySelector<SVGPathElement>('.kerusi-seat__ring')!;
+      const bodyPoints = pathPoints(box('A1').getAttribute('d')!);
+      const ringPoints = pathPoints(ring.getAttribute('d')!);
+      expect(Math.min(...ringPoints)).toBeGreaterThan(Math.min(...bodyPoints));
+      expect(Math.max(...ringPoints)).toBeLessThan(Math.max(...bodyPoints));
     });
   });
 });

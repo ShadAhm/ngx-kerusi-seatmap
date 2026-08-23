@@ -26,11 +26,37 @@
     <ul class="kerusi-legend__list">
       @for (status of statuses(); track status.key) {
         <li class="kerusi-legend__item">
-          <span
-            class="kerusi-legend__swatch"
+          <!-- Shape carries status now, so every swatch draws the seat glyph
+               rather than a flat colour — a flat swatch would teach a cue the
+               map itself no longer uses. -->
+          <svg
+            class="kerusi-legend__swatch kerusi-legend__swatch--glyph"
             aria-hidden="true"
-            [style.background]="status.color"
-          ></span>
+            focusable="false"
+            [attr.viewBox]="'0 0 ' + glyphSize + ' ' + glyphSize"
+          >
+            <path [attr.d]="glyphBody" [style.fill]="status.fill" />
+            @if (hasWash(status.kind)) {
+              <path [attr.d]="glyphBody" [style.fill]="washFillOf(status.kind)" opacity="0.5" />
+            }
+            @if (status.kind === 'selected') {
+              <path
+                [attr.d]="glyphRing"
+                fill="none"
+                [attr.stroke-width]="glyphRingStroke"
+                [style.stroke]="selectedFg()"
+              />
+            }
+            @if (hasOccupant(status.kind)) {
+              <path
+                [attr.d]="glyphOccupant"
+                class="kerusi-legend__occupant kerusi-legend__occupant--{{ status.kind }}"
+                [attr.stroke-width]="glyphOccupantStroke"
+                [style.fill]="occupantFillOf(status.kind)"
+                [style.stroke]="occupantStrokeOf(status.kind)"
+              />
+            }
+          </svg>
           <span class="kerusi-legend__label">{{ status.label }}</span>
         </li>
       }

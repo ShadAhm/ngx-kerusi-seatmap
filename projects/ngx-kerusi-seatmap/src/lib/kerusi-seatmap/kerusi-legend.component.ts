@@ -1,13 +1,33 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { formatMoney } from '../kerusi/kerusi-locale';
 import { RenderLegendEntry } from '../render/render-model';
-import { DEFAULT_KERUSI_COLORS, KerusiSeatmapColors, readableOn } from './kerusi-seatmap-colors';
+import {
+  seatBodyPath,
+  seatOccupantPath,
+  seatOccupantStroke,
+  seatRingStroke,
+} from '../render/seat-shapes';
+import {
+  cssVar,
+  DEFAULT_KERUSI_COLORS,
+  KerusiSeatmapColors,
+  occupantFillFor,
+  occupantStrokeFor,
+  readableOn,
+  SeatOccupantVariant,
+  seatWashFill,
+} from './kerusi-seatmap-colors';
+
+/** Which marks, beyond the body fill, a status swatch draws. */
+type StatusKind = 'plain' | 'blocked' | SeatOccupantVariant;
 
 /** One availability swatch in the legend's second block. */
 interface StatusEntry {
   key: string;
   label: string;
-  color: string;
+  kind: StatusKind;
+  /** The swatch body's fill. */
+  fill: string;
 }
 
 /**
@@ -47,23 +67,82 @@ export class KerusiLegendComponent {
     this.legend().filter((entry) => !this.hideUnusedTypes() || entry.seatCount > 0),
   );
 
+  // Colour means seat type; shape means status (see `seatFill`'s doc comment).
+  // Held and booked swatches share the plain "available" body colour — the
+  // map's colour there is always whatever the seat's own type supplies, which
+  // the legend has no single value for — and are told apart by their wash and
+  // occupant figure instead, same as on the map.
   protected readonly statuses = computed<StatusEntry[]>(() => {
     const c = this.colors();
+    const available = cssVar('availableBg', c.availableBg);
     return [
-      { key: 'available', label: 'Available', color: c.availableBg },
-      { key: 'selected', label: 'Selected', color: c.selectedBg },
-      { key: 'held', label: 'On hold', color: c.heldBg },
-      { key: 'booked', label: 'Booked', color: c.bookedBg },
-      { key: 'blocked', label: 'Blocked', color: c.blockedBg },
+      { key: 'available', label: 'Available', kind: 'plain', fill: available },
+      {
+        key: 'selected',
+        label: 'Selected',
+        kind: 'selected',
+        fill: cssVar('selectedBg', c.selectedBg),
+      },
+      { key: 'held', label: 'On hold', kind: 'held', fill: available },
+      { key: 'booked', label: 'Booked', kind: 'booked', fill: available },
+      { key: 'blocked', label: 'Blocked', kind: 'blocked', fill: cssVar('blockedBg', c.blockedBg) },
     ];
   });
 
   protected swatch(entry: RenderLegendEntry): string {
-    return (this.typeColors() && entry.color) || this.colors().availableBg;
+    return (this.typeColors() && entry.color) || cssVar('availableBg', this.colors().availableBg);
   }
 
   protected swatchText(entry: RenderLegendEntry): string {
-    return readableOn(this.swatch(entry));
+    const typeColor = this.typeColors() && entry.color;
+    // Mirrors `seatTextFill`: only a document-supplied color needs guessing at.
+    return typeColor ? readableOn(typeColor) : cssVar('availableFg', this.colors().availableFg);
+  }
+
+  // --- status swatches -------------------------------------------------------
+  //
+  // Availability is now signalled by shape, not colour, so every status swatch
+  // (bar "available" and "blocked") draws the same glyph the map does rather
+  // than a flat square. A legend that showed only flat colour would teach a
+  // cue the map no longer uses.
+
+  /** The swatch's viewBox edge; the seat glyph is drawn to fill it. */
+  protected readonly glyphSize = 16;
+
+  protected readonly glyphBody = seatBodyPath(0, 0, this.glyphSize, this.glyphSize);
+  protected readonly glyphRingStroke = seatRingStroke(this.glyphSize, this.glyphSize);
+  protected readonly glyphRing = seatBodyPath(
+    0,
+    0,
+    this.glyphSize,
+    this.glyphSize,
+    this.glyphRingStroke / 2,
+  );
+  protected readonly glyphOccupant = seatOccupantPath(0, 0, this.glyphSize, this.glyphSize);
+  protected readonly glyphOccupantStroke = seatOccupantStroke(this.glyphSize, this.glyphSize);
+
+  protected hasWash(kind: StatusKind): kind is 'held' | 'booked' {
+    return kind === 'held' || kind === 'booked';
+  }
+
+  protected hasOccupant(kind: StatusKind): kind is SeatOccupantVariant {
+    return kind === 'selected' || kind === 'held' || kind === 'booked';
+  }
+
+  protected washFillOf(kind: 'held' | 'booked'): string {
+    return seatWashFill(kind, this.colors());
+  }
+
+  protected occupantFillOf(variant: SeatOccupantVariant): string {
+    return occupantFillFor(variant, this.colors());
+  }
+
+  protected occupantStrokeOf(variant: SeatOccupantVariant): string {
+    return occupantStrokeFor(variant, this.colors());
+  }
+
+  protected selectedFg(): string {
+    return cssVar('selectedFg', this.colors().selectedFg);
   }
 
   protected price(entry: RenderLegendEntry): string {

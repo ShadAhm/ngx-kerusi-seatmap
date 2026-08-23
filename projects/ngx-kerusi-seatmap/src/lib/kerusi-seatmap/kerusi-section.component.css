@@ -26,18 +26,61 @@
   font-family: inherit;
 }
 
-.kerusi-seat__box {
-  transition: fill 120ms ease-out;
+/* No `transition: fill` here, deliberately. Every fill is now a
+   `var(--kerusi-*, …)` substitution, and Chromium cannot transition a paint
+   property to a variable-derived value — the transition never advances and the
+   seat keeps its previous color for good, so a selected seat would never turn
+   selected. Correct color beats a 120ms fade. */
+
+/* Drawn over the seat's own type-colour fill, so a held or booked seat still
+   recedes even though its hue no longer changes. Fill colour comes from the
+   `washFill()` binding; opacity is the only thing this rule owns. */
+.kerusi-seat__wash {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
-.kerusi-seat__backrest {
+.kerusi-seat__ring {
   pointer-events: none;
+  fill: none;
+}
+
+/* Fill/stroke colour is bound inline per variant (`occupantFill` /
+   `occupantStrokeColor`); these rules only set the weight each variant reads
+   at. Solid = settled (yours, or sold); hollow = a hold still in progress. */
+.kerusi-seat__occupant {
+  pointer-events: none;
+}
+
+.kerusi-seat__occupant--selected {
+  opacity: 0.35;
+}
+
+.kerusi-seat__occupant--booked {
   opacity: 0.55;
 }
 
-/* The focus ring is drawn on the seat box so it follows a rotated seat. */
+.kerusi-seat__occupant--held {
+  opacity: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The number competes with the silhouette behind it. */
+.kerusi-seat--selected .kerusi-seat__label {
+  font-weight: 600;
+}
+
+/* The focus ring is drawn on the seat box so it follows a rotated seat. It is
+   a separate mark from the selected ring, so a focused selected seat shows
+   both.
+
+   Two levels of fallback, so this token keeps the same precedence as every
+   other one: a `--kerusi-focus-ring` from the consumer's stylesheet wins;
+   otherwise `--kerusi-focus-ring-input`, which the component writes from the
+   `[colors]` input; otherwise the inherited text color. */
 .kerusi-seat:focus-visible .kerusi-seat__box {
-  stroke: currentColor;
+  stroke: var(--kerusi-focus-ring, var(--kerusi-focus-ring-input, currentColor));
   stroke-width: 2.5;
   paint-order: stroke;
 }
@@ -46,10 +89,4 @@
   stroke-width: 1;
   stroke-dasharray: 4 3;
   opacity: 0.7;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .kerusi-seat__box {
-    transition: none;
-  }
 }

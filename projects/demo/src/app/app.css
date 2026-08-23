@@ -369,3 +369,36 @@ main {
   color: var(--ink-dim);
   font-size: 0.85rem;
 }
+
+/* --- theming the seat map ------------------------------------------------ */
+
+/* The library ships a palette tuned for a light page; this shell is dark. None
+   of this touches the component's inputs — every value below is a CSS custom
+   property the library reads through `var(--kerusi-*, <input value>)`, so a
+   stylesheet is all it takes to retheme the map. */
+
+kerusi-seatmap {
+  --kerusi-available-bg: #2f6b45;
+  --kerusi-available-fg: #d7f5e2;
+  /* The one status that still owns the fill outright. */
+  --kerusi-selected-bg: #8b6ad6;
+  --kerusi-selected-fg: #f8f4ff;
+  /* held/booked no longer change the seat's own colour — a seat keeps its
+     type colour under a *Bg wash, with *Fg tinting the occupant figure that
+     marks it. */
+  --kerusi-held-bg: #7a5410;
+  --kerusi-held-fg: #ffe1a8;
+  --kerusi-booked-bg: #6b2731;
+  --kerusi-booked-fg: #ffc9d0;
+  --kerusi-blocked-bg: #2c323d;
+  --kerusi-blocked-fg: #808a9b;
+
+  --kerusi-element-bg: #232a36;
+  --kerusi-element-fg: #aab4c6;
+  --kerusi-element-accent-bg: #2f5da8;
+  --kerusi-element-accent-fg: #e8f0ff;
+  --kerusi-element-muted-bg: #1a202a;
+  --kerusi-element-muted-fg: #6f7a8c;
+
+  --kerusi-focus-ring: #ffffff;
+}

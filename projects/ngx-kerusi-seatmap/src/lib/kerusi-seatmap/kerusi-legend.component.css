@@ -48,6 +48,28 @@
   border-radius: 3px;
 }
 
+/* The seat glyph carries its own corner radius in the viewBox. */
+.kerusi-legend__swatch--glyph {
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* Mirrors `.kerusi-seat__occupant--*` on the map, so the key matches what it
+   is keying. Fill/stroke colour is bound inline; these set the weight. */
+.kerusi-legend__occupant--selected {
+  opacity: 0.35;
+}
+
+.kerusi-legend__occupant--booked {
+  opacity: 0.55;
+}
+
+.kerusi-legend__occupant--held {
+  opacity: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .kerusi-legend__price {
   opacity: 0.7;
   font-variant-numeric: tabular-nums;

@@ -1,14 +1,26 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { elementStyle, screenPath } from '../render/element-shapes';
+import {
+  seatBodyPath,
+  seatOccupantPath,
+  seatOccupantStroke,
+  seatRingStroke,
+} from '../render/seat-shapes';
 import { PlacedElement, PlacedSeat, SectionLayout } from '../render/section-layout';
 import { RenderSection } from '../render/render-model';
 import {
+  cssVar,
   DEFAULT_KERUSI_COLORS,
   elementFill,
   elementTextFill,
   KerusiSeatmapColors,
+  occupantFillFor,
+  occupantStrokeFor,
+  SeatOccupantVariant,
   seatFill,
+  seatOccupantVariant,
   seatTextFill,
+  seatWashFill,
 } from './kerusi-seatmap-colors';
 
 /**
@@ -74,6 +86,60 @@ export class KerusiSectionComponent {
 
   protected textFill(placed: PlacedSeat): string {
     return seatTextFill(placed.seat, this.isSelected(placed), this.colors(), this.typeColors());
+  }
+
+  protected backdrop(): string {
+    return cssVar('backdrop', this.colors().backdrop);
+  }
+
+  // --- the seat glyph -------------------------------------------------------
+
+  /** The seat's outline: square-ish front, tapered back — shape carries facing. */
+  protected bodyPath(placed: PlacedSeat): string {
+    return seatBodyPath(placed.x, placed.y, placed.width, placed.height);
+  }
+
+  /** `null` for an available or blocked seat — nothing to mark. */
+  protected occupantVariant(placed: PlacedSeat): SeatOccupantVariant | null {
+    return seatOccupantVariant(placed.seat, this.isSelected(placed));
+  }
+
+  protected ringPath(placed: PlacedSeat): string {
+    return seatBodyPath(
+      placed.x,
+      placed.y,
+      placed.width,
+      placed.height,
+      this.ringStroke(placed) / 2,
+    );
+  }
+
+  protected ringStroke(placed: PlacedSeat): number {
+    return seatRingStroke(placed.width, placed.height);
+  }
+
+  /** The dimming wash over a held or booked seat's type colour. */
+  protected washFill(placed: PlacedSeat): string {
+    // Only called for held/booked seats — see the template's @if.
+    return seatWashFill(placed.seat.status as 'held' | 'booked', this.colors());
+  }
+
+  /** The occupant figure for a marked seat. */
+  protected occupantPath(placed: PlacedSeat): string {
+    return seatOccupantPath(placed.x, placed.y, placed.width, placed.height);
+  }
+
+  protected occupantStroke(placed: PlacedSeat): number {
+    return seatOccupantStroke(placed.width, placed.height);
+  }
+
+  /** Solid for selected/booked; `none` for held, which draws hollow instead. */
+  protected occupantFill(variant: SeatOccupantVariant): string {
+    return occupantFillFor(variant, this.colors());
+  }
+
+  protected occupantStrokeColor(variant: SeatOccupantVariant): string {
+    return occupantStrokeFor(variant, this.colors());
   }
 
   /** The section's single tab stop; every other seat is reachable by arrow key. */
