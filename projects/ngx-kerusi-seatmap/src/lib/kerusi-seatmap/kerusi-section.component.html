@@ -3,6 +3,7 @@
   class="kerusi-section-svg"
   role="presentation"
   focusable="false"
+  [style.--kerusi-focus-ring-input]="colors().focusRing"
   [attr.viewBox]="viewBox()"
   [style.max-width.px]="naturalWidth()"
   preserveAspectRatio="xMidYMid meet"
@@ -12,7 +13,7 @@
     y="0"
     [attr.width]="layout().width"
     [attr.height]="layout().height"
-    [attr.fill]="colors().backdrop"
+    [style.fill]="backdrop()"
   />
 
   <!-- Elements first, so a screen or stage sits behind the seats it faces. -->
@@ -23,7 +24,7 @@
     >
       @switch (style(placed).shape) {
         @case ('screen') {
-          <path [attr.d]="screenPathOf(placed)" [attr.fill]="elementFillOf(placed)" />
+          <path [attr.d]="screenPathOf(placed)" [style.fill]="elementFillOf(placed)" />
         }
         @case ('void') {
           <rect
@@ -32,7 +33,7 @@
             [attr.y]="placed.y"
             [attr.width]="placed.width"
             [attr.height]="placed.height"
-            [attr.stroke]="elementTextFillOf(placed)"
+            [style.stroke]="elementTextFillOf(placed)"
             fill="none"
           />
         }
@@ -43,7 +44,7 @@
             [attr.width]="placed.width"
             [attr.height]="placed.height"
             [attr.rx]="radiusOf(placed)"
-            [attr.fill]="elementFillOf(placed)"
+            [style.fill]="elementFillOf(placed)"
           />
         }
       }
@@ -55,7 +56,7 @@
           [attr.x]="placed.centerX"
           [attr.y]="placed.centerY"
           [attr.font-size]="placed.fontSize"
-          [attr.fill]="elementTextFillOf(placed)"
+          [style.fill]="elementTextFillOf(placed)"
           [attr.transform]="counterRotate(placed)"
         >
           {{ placed.element.label }}
@@ -78,25 +79,42 @@
       (focus)="onSeatFocus(placed)"
       (keydown)="onKeydown($event)"
     >
-      <rect
-        class="kerusi-seat__box"
-        [attr.x]="placed.x"
-        [attr.y]="placed.y"
-        [attr.width]="placed.width"
-        [attr.height]="placed.height"
-        [attr.rx]="placed.width * 0.18"
-        [attr.fill]="fill(placed)"
-      />
-      <!-- The seat's back edge (unrotated = bottom, opposite the front it faces), so an SVG rotation is visible on the shape itself. -->
-      <rect
-        class="kerusi-seat__backrest"
-        [attr.x]="placed.x + placed.width * 0.2"
-        [attr.y]="placed.y + placed.height * 0.76"
-        [attr.width]="placed.width * 0.6"
-        [attr.height]="placed.height * 0.16"
-        [attr.rx]="placed.height * 0.08"
-        [attr.fill]="textFill(placed)"
-      />
+      @let variant = occupantVariant(placed);
+      <!-- Tapered toward the back, square at the front, so which way the seat
+           faces is legible from the outline alone. -->
+      <path class="kerusi-seat__box" [attr.d]="bodyPath(placed)" [style.fill]="fill(placed)" />
+      @if (variant === 'held' || variant === 'booked') {
+        <!-- Colour stays the seat type's; a taken seat recedes under a wash
+             instead, so the type colour still reads on a busy map. -->
+        <path
+          class="kerusi-seat__wash"
+          [attr.d]="bodyPath(placed)"
+          [style.fill]="washFill(placed)"
+        />
+      }
+      @if (variant === 'selected') {
+        <!-- Selection must survive the colours being rethemed: a ring and a
+             silhouette say "picked" even when selectedBg is overridden. -->
+        <path
+          class="kerusi-seat__ring"
+          [attr.d]="ringPath(placed)"
+          fill="none"
+          [attr.stroke-width]="ringStroke(placed)"
+          [style.stroke]="textFill(placed)"
+        />
+      }
+      @if (variant) {
+        <!-- Deliberately not counter-rotated: the occupant leans with the
+             seat. Solid = settled (yours, or sold); hollow = a hold still in
+             progress. -->
+        <path
+          class="kerusi-seat__occupant kerusi-seat__occupant--{{ variant }}"
+          [attr.d]="occupantPath(placed)"
+          [attr.stroke-width]="occupantStroke(placed)"
+          [style.fill]="occupantFill(variant)"
+          [style.stroke]="occupantStrokeColor(variant)"
+        />
+      }
       <text
         class="kerusi-seat__label"
         text-anchor="middle"
@@ -104,7 +122,7 @@
         [attr.x]="placed.centerX"
         [attr.y]="placed.centerY"
         [attr.font-size]="placed.fontSize"
-        [attr.fill]="textFill(placed)"
+        [style.fill]="textFill(placed)"
         [attr.transform]="counterRotate(placed)"
       >
         {{ placed.seat.label }}
@@ -116,7 +134,7 @@
           [attr.cx]="placed.x + placed.width * 0.82"
           [attr.cy]="placed.y + placed.height * 0.18"
           [attr.r]="placed.width * 0.13"
-          [attr.fill]="textFill(placed)"
+          [style.fill]="textFill(placed)"
         />
       }
     </g>

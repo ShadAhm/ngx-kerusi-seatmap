@@ -11,3 +11,4 @@ export * from './build-render-model';
 export * from './section-layout';
 export * from './navigation-order';
 export * from './element-shapes';
+export * from './seat-shapes';

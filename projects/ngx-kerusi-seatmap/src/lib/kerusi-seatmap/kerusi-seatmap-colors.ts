@@ -3,26 +3,40 @@ import { RenderSeat } from '../render/render-model';
 /**
  * Theming for `<kerusi-seatmap>`.
  *
- * The pre-1.0 renderer colored purely by availability, so `SeatType.color` — the
- * spec's own suggested render color (§4.7) — was parsed and then ignored, and a
- * map could not color its own types. Here availability still wins where it must
- * (a booked seat must read as booked) but an available seat takes its type's
- * color when the document supplies one.
+ * Color means seat type; shape means status. The pre-1.0 renderer colored
+ * purely by availability, so `SeatType.color` — the spec's own suggested
+ * render color (§4.7) — was parsed and then ignored, and a map could not
+ * color its own types. A later revision swung the other way and let status
+ * override the type color, which hid the type color on every held or booked
+ * seat — exactly where a busy map needed it most. Now a seat keeps its type
+ * color everywhere; status is read from a dimming wash and an occupant figure
+ * instead (see {@link seatFill}). `selected` is the one deliberate exception:
+ * it still owns the fill outright, so your own picks are never ambiguous.
  */
 export interface KerusiSeatmapColors {
   /** An available seat with no type color. */
   availableBg?: string;
   availableFg?: string;
-  /** A seat the user has picked. Always wins over every other state. */
+  /**
+   * A seat the user has picked. The one status that still owns the fill —
+   * see {@link seatFill} — so your own picks always pop out of the map.
+   */
   selectedBg?: string;
   selectedFg?: string;
-  /** Sold. */
+  /**
+   * Sold. The seat keeps its type color; `bookedBg` is the dimming wash drawn
+   * over it and `bookedFg` tints the solid occupant figure that marks it.
+   */
   bookedBg?: string;
   bookedFg?: string;
-  /** Someone else's checkout in progress. */
+  /**
+   * Someone else's checkout in progress. `heldBg` washes the seat's type
+   * color and `heldFg` strokes the hollow occupant figure that marks it —
+   * hollow because the hold is provisional, not settled.
+   */
   heldBg?: string;
   heldFg?: string;
-  /** Withheld by the venue. */
+  /** Withheld by the venue: no occupant, so grey is the whole signal. */
   blockedBg?: string;
   blockedFg?: string;
 
@@ -47,10 +61,10 @@ export const DEFAULT_KERUSI_COLORS: Required<KerusiSeatmapColors> = {
   availableFg: '#123a08',
   selectedBg: '#7854af',
   selectedFg: '#f3ecff',
-  bookedBg: '#f56979',
-  bookedFg: '#5e0c17',
-  heldBg: '#e6a817',
-  heldFg: '#4a3500',
+  bookedBg: '#5e0c17',
+  bookedFg: '#ffc9d0',
+  heldBg: '#4a3500',
+  heldFg: '#ffe1a8',
   blockedBg: '#5a616e',
   blockedFg: '#d2d7df',
   elementBg: '#d7deea',
@@ -64,13 +78,47 @@ export const DEFAULT_KERUSI_COLORS: Required<KerusiSeatmapColors> = {
 };
 
 /**
+ * A palette value as a CSS custom property, with the resolved `[colors]` value
+ * as its fallback.
+ *
+ * This is what makes the theme reachable from a stylesheet. The palette is
+ * still a TypeScript object, but every value it produces is written as
+ * `var(--kerusi-selected-bg, #7854af)`, so a consumer has three tiers to work
+ * with, in precedence order:
+ *
+ *   a `--kerusi-*` property in their own CSS  →  the `[colors]` input  →  the
+ *   library default
+ *
+ * The custom property is never set by the library itself, which is what keeps
+ * that order honest: if the component wrote the input onto the host, the input
+ * would always beat the stylesheet and the CSS tier would be decorative.
+ *
+ * `SeatType.color` deliberately does not go through here. That is the
+ * document's own value under §4.7, not the theme's, and {@link readableOn}
+ * still has to be able to parse it.
+ */
+export function cssVar(key: keyof KerusiSeatmapColors, value: string): string {
+  return `var(${cssVarName(key)}, ${value})`;
+}
+
+/** `selectedBg` → `--kerusi-selected-bg`. */
+export function cssVarName(key: keyof KerusiSeatmapColors): string {
+  return `--kerusi-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+}
+
+/**
  * The fill for a seat, in precedence order:
  *
- *   selected → blocked → booked → held → `SeatType.color` → available
+ *   selected → blocked → `SeatType.color` → available
  *
- * Availability outranks the type color because a sold seat that renders in its
- * type's color is a booking bug waiting to happen. Attributes never affect the
- * fill — §4.3.3 makes them descriptive tags, not a rendering category.
+ * A held or booked seat is deliberately *not* in this list: it keeps its type
+ * color, same as an available one, because status is read from
+ * {@link seatOccupantVariant}'s figure and {@link seatWashFill}'s wash
+ * instead. Hiding the type color behind a status hue was the bug this
+ * replaced — see the module doc comment. `blocked` still gets its own fill,
+ * because a seat withheld by the venue has no occupant to draw; grey is the
+ * whole signal, same as before. Attributes never affect the fill — §4.3.3
+ * makes them descriptive tags, not a rendering category.
  */
 export function seatFill(
   seat: RenderSeat,
@@ -79,18 +127,12 @@ export function seatFill(
   useTypeColors: boolean,
 ): string {
   if (selected) {
-    return colors.selectedBg;
+    return cssVar('selectedBg', colors.selectedBg);
   }
-  switch (seat.status) {
-    case 'blocked':
-      return colors.blockedBg;
-    case 'booked':
-      return colors.bookedBg;
-    case 'held':
-      return colors.heldBg;
-    default:
-      return (useTypeColors && seat.typeColor) || colors.availableBg;
+  if (seat.status === 'blocked') {
+    return cssVar('blockedBg', colors.blockedBg);
   }
+  return (useTypeColors && seat.typeColor) || cssVar('availableBg', colors.availableBg);
 }
 
 /** The label color to pair with {@link seatFill}. */
@@ -101,18 +143,84 @@ export function seatTextFill(
   useTypeColors: boolean,
 ): string {
   if (selected) {
-    return colors.selectedFg;
+    return cssVar('selectedFg', colors.selectedFg);
   }
-  switch (seat.status) {
-    case 'blocked':
-      return colors.blockedFg;
-    case 'booked':
-      return colors.bookedFg;
+  if (seat.status === 'blocked') {
+    return cssVar('blockedFg', colors.blockedFg);
+  }
+  return useTypeColors && seat.typeColor
+    ? readableOn(seat.typeColor)
+    : cssVar('availableFg', colors.availableFg);
+}
+
+/** Which occupant figure marks a seat, if any — see {@link seatFill}. */
+export type SeatOccupantVariant = 'selected' | 'held' | 'booked';
+
+/**
+ * The occupant figure for a seat, or `null` for a seat with nothing to draw:
+ * available (nobody there yet) and blocked (nobody ever will be).
+ */
+export function seatOccupantVariant(
+  seat: RenderSeat,
+  selected: boolean,
+): SeatOccupantVariant | null {
+  if (selected) {
+    return 'selected';
+  }
+  if (seat.status === 'held' || seat.status === 'booked') {
+    return seat.status;
+  }
+  return null;
+}
+
+/**
+ * The tint for an occupant figure: solid `selectedFg`/`bookedFg` for a seat
+ * that is settled (yours, or someone else's), or `heldFg` for the hollow
+ * outline that marks a hold still in progress.
+ */
+export function occupantTint(
+  variant: SeatOccupantVariant,
+  colors: Required<KerusiSeatmapColors>,
+): string {
+  switch (variant) {
+    case 'selected':
+      return cssVar('selectedFg', colors.selectedFg);
     case 'held':
-      return colors.heldFg;
-    default:
-      return useTypeColors && seat.typeColor ? readableOn(seat.typeColor) : colors.availableFg;
+      return cssVar('heldFg', colors.heldFg);
+    case 'booked':
+      return cssVar('bookedFg', colors.bookedFg);
   }
+}
+
+/**
+ * The dimming wash drawn over a held or booked seat's type color, so a taken
+ * seat still recedes even though its hue no longer changes.
+ */
+export function seatWashFill(
+  status: 'held' | 'booked',
+  colors: Required<KerusiSeatmapColors>,
+): string {
+  return status === 'held' ? cssVar('heldBg', colors.heldBg) : cssVar('bookedBg', colors.bookedBg);
+}
+
+/**
+ * The occupant figure's fill: solid for `selected`/`booked`, `none` for
+ * `held` — a hold in progress draws as a hollow outline instead. Pair with
+ * {@link occupantStrokeFill}, which is the exact inverse.
+ */
+export function occupantFillFor(
+  variant: SeatOccupantVariant,
+  colors: Required<KerusiSeatmapColors>,
+): string {
+  return variant === 'held' ? 'none' : occupantTint(variant, colors);
+}
+
+/** The occupant figure's stroke: only the hollow `held` variant has one. */
+export function occupantStrokeFor(
+  variant: SeatOccupantVariant,
+  colors: Required<KerusiSeatmapColors>,
+): string {
+  return variant === 'held' ? occupantTint(variant, colors) : 'none';
 }
 
 /** Element fill for a shape tone. */
@@ -121,10 +229,10 @@ export function elementFill(
   colors: Required<KerusiSeatmapColors>,
 ): string {
   return tone === 'accent'
-    ? colors.elementAccentBg
+    ? cssVar('elementAccentBg', colors.elementAccentBg)
     : tone === 'muted'
-      ? colors.elementMutedBg
-      : colors.elementBg;
+      ? cssVar('elementMutedBg', colors.elementMutedBg)
+      : cssVar('elementBg', colors.elementBg);
 }
 
 /** Element label color for a shape tone. */
@@ -133,10 +241,10 @@ export function elementTextFill(
   colors: Required<KerusiSeatmapColors>,
 ): string {
   return tone === 'accent'
-    ? colors.elementAccentFg
+    ? cssVar('elementAccentFg', colors.elementAccentFg)
     : tone === 'muted'
-      ? colors.elementMutedFg
-      : colors.elementFg;
+      ? cssVar('elementMutedFg', colors.elementMutedFg)
+      : cssVar('elementFg', colors.elementFg);
 }
 
 /**
