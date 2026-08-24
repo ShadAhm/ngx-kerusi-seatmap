@@ -9,12 +9,17 @@ import {
 } from 'ngx-kerusi-seatmap';
 import { DEMO_LOCALES, Scenario, SCENARIOS } from './scenarios';
 
+const THEME_STORAGE_KEY = 'kerusi-demo-theme';
+
+type Theme = 'light' | 'dark';
+
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [KerusiSeatmapComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
+  host: { '[attr.data-theme]': 'theme()' },
 })
 export class App {
   protected readonly scenarios = SCENARIOS;
@@ -25,6 +30,17 @@ export class App {
   protected readonly showLegend = signal(true);
   protected readonly typeColors = signal(true);
   protected readonly showSource = signal(false);
+  protected readonly theme = signal<Theme>(getInitialTheme());
+
+  protected toggleTheme(): void {
+    const next: Theme = this.theme() === 'dark' ? 'light' : 'dark';
+    this.theme.set(next);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch {
+      /* private browsing or storage disabled — theme just won't persist. */
+    }
+  }
 
   /** Selections are per scenario, so switching tabs does not lose a pick. */
   private readonly selections = signal<Record<string, readonly string[]>>({});
@@ -89,6 +105,22 @@ export class App {
       elements: section.elements.length,
     })),
   );
+}
+
+function getInitialTheme(): Theme {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark') {
+      return stored;
+    }
+  } catch {
+    /* private browsing or storage disabled — fall through to system preference. */
+  }
+  try {
+    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  } catch {
+    return 'dark';
+  }
 }
 
 const DISALLOWED_TEXT: Record<SeatDisallowed['reason'], string> = {

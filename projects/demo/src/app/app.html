@@ -1,10 +1,22 @@
 <header class="site-header">
-  <h1>ngx-kerusi-seatmap</h1>
-  <p>
-    An Angular seat map that renders
-    <a href="https://github.com/ShadAhm/kerusi">Kerusi</a> documents directly — every positioning
-    mode, sections as real render units, and a keyboard-navigable, screen-reader-friendly SVG.
-  </p>
+  <div>
+    <h1>ngx-kerusi-seatmap</h1>
+    <p>
+      An Angular seat map that renders
+      <a href="https://github.com/ShadAhm/kerusi">Kerusi</a> documents directly — every
+      positioning mode, sections as real render units, and a keyboard-navigable,
+      screen-reader-friendly SVG.
+    </p>
+  </div>
+
+  <button
+    type="button"
+    class="theme-toggle"
+    [attr.aria-pressed]="theme() === 'dark'"
+    (click)="toggleTheme()"
+  >
+    {{ theme() === 'dark' ? '☀️ Light mode' : '🌙 Dark mode' }}
+  </button>
 </header>
 
 <main>
