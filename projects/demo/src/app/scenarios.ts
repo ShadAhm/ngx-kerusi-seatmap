@@ -37,7 +37,7 @@ export const SCENARIOS: readonly Scenario[] = [
     highlights: [
       'layout: "grid" — every seat has col, no seat has x or y',
       'Two aisles as skipped columns split each row into three blocks',
-      'A dedicated row-less row gives the screen somewhere to sit',
+      'The screen is grid-addressed by col, with y placing it above row A',
       'Screen and exits are non-bookable Elements',
       'Love seats are symmetric companions — they book as a pair',
       'A wheelchair bay declares accessibility, not an attribute tag',
@@ -45,6 +45,10 @@ export const SCENARIOS: readonly Scenario[] = [
     map: CINEMA_MAP,
     state: CINEMA_STATE,
     session: CINEMA_SESSION,
+    // A bit above the default cell size: the screen's own margin (padding,
+    // §computeGridLayout) grows with it, giving the screen room to be both
+    // thicker and further from row A than the default grid budget allows.
+    seatSize: 36,
   },
   {
     id: 'aircraft',
