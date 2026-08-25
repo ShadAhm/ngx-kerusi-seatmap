@@ -93,15 +93,11 @@
         />
       }
       @if (variant === 'selected') {
-        <!-- Selection must survive the colours being rethemed: a ring and a
-             silhouette say "picked" even when selectedBg is overridden. -->
-        <path
-          class="kerusi-seat__ring"
-          [attr.d]="ringPath(placed)"
-          fill="none"
-          [attr.stroke-width]="ringStroke(placed)"
-          [style.stroke]="textFill(placed)"
-        />
+        <!-- Selection is the one state drawn from two tones: the body above is
+             the frame, this is the bright core inside it. Whichever way the
+             host page is themed, one of the two separates from it — which is
+             why nothing here has to know about the page. -->
+        <path class="kerusi-seat__core" [attr.d]="corePath(placed)" [style.fill]="coreFill()" />
       }
       @if (variant) {
         <!-- Deliberately not counter-rotated: the occupant leans with the
@@ -123,6 +119,8 @@
         [attr.y]="placed.centerY"
         [attr.font-size]="placed.fontSize"
         [style.fill]="textFill(placed)"
+        [style.stroke]="labelHalo(placed)"
+        [attr.stroke-width]="labelHaloWidth(placed)"
         [attr.transform]="counterRotate(placed)"
       >
         {{ placed.seat.label }}
@@ -131,9 +129,9 @@
         <!-- A corner marker, not a different fill: availability owns the fill. -->
         <circle
           class="kerusi-seat__wheelchair"
-          [attr.cx]="placed.x + placed.width * 0.82"
-          [attr.cy]="placed.y + placed.height * 0.18"
-          [attr.r]="placed.width * 0.13"
+          [attr.cx]="wheelchairCx(placed)"
+          [attr.cy]="wheelchairCy(placed)"
+          [attr.r]="wheelchairRadius(placed)"
           [style.fill]="textFill(placed)"
         />
       }

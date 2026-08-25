@@ -99,7 +99,7 @@ import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
 does not change when the seat is held or booked. Overloading fill with both
 type and status hid the type colour on exactly the seats a busy map has most
 of; see the doc comment on `seatFill` for the full argument. `selected` is the
-one deliberate exception: it still owns the fill outright, so your own picks
+one deliberate exception: it still owns the seat's colour outright, so your own picks
 are never ambiguous, and a purple fill on its own would in any case fail WCAG
 1.4.1 (Use of Colour) for anyone who cannot distinguish it — hence the shape
 cues below.
@@ -113,18 +113,31 @@ upright regardless.
 
 Status is read from two marks layered over the body, never from its colour:
 
-| State     | Fill         | Wash       | Occupant figure                                      |
-| --------- | ------------ | ---------- | ---------------------------------------------------- |
-| Available | type colour  | —          | —                                                    |
-| Selected  | `selectedBg` | —          | solid, tinted `selectedFg`                           |
-| Held      | type colour  | `heldBg`   | **hollow**, stroked `heldFg` — a hold is provisional |
-| Booked    | type colour  | `bookedBg` | solid, tinted `bookedFg` — settled, someone else's   |
-| Blocked   | `blockedBg`  | —          | — (withheld by the venue; no one is there)           |
+| State     | Fill                                    | Wash       | Occupant figure                                      |
+| --------- | --------------------------------------- | ---------- | ---------------------------------------------------- |
+| Available | type colour                             | —          | —                                                    |
+| Selected  | `selectedBg` **frame** + `selectedFg` **core** | —    | solid, tinted `selectedBg`                           |
+| Held      | type colour                             | `heldBg`   | **hollow**, stroked `heldFg` — a hold is provisional |
+| Booked    | type colour                             | `bookedBg` | solid, tinted `bookedFg` — settled, someone else's   |
+| Blocked   | `blockedBg`                             | —          | — (withheld by the venue; no one is there)           |
 
 Solid vs. hollow is the real distinction — settled vs. still in progress — and
 every figure leans with the seat rather than staying upright, so it doubles as
-an orientation cue too. The selected seat additionally gets a thick inner
-ring, since it is the one state a picker most needs to relocate at a glance.
+an orientation cue too.
+
+Selection is the only state drawn from **two** tones rather than one, and that
+is deliberate. `selectedBg` frames the seat; `selectedFg` fills a core inside
+that frame and is what the number and the figure are read against. Because the
+treatment always holds a light tone and a dark one at once, one of the two
+separates from the page whichever way you have themed it — so the library never
+has to detect a colour scheme, and there is no `prefers-color-scheme` default to
+fight with your own. An earlier revision had this inverted, a near-white rim
+around a mid-purple middle, which put the low-contrast tone on the outside
+boundary: a selected seat dissolved into a light page and sank into a dark one.
+
+Both tokens therefore carry real visual weight — override them as a pair. Swapping
+the two gives the inverse treatment, a light frame around a dark core, which works
+just as well.
 
 A theme that overrides `heldFg`/`bookedFg` owns the contrast of that mark
 against whatever `SeatType.color` the document supplies — the library cannot
@@ -133,7 +146,11 @@ colour underneath it is not. The shipped defaults are light marks over a
 darkened wash, which reads across the tier colours in the demo fixtures.
 
 The geometry is exported, if you want to draw a matching seat elsewhere:
-`seatBodyPath`, `seatRingStroke`, `seatOccupantPath`, `seatOccupantStroke`.
+`seatBodyPath`, `seatSelectedFrame`, `seatOccupantPath`, `seatOccupantStroke`.
+(`seatRingStroke` is the old name for `seatSelectedFrame` and still resolves to
+it.) A seat is always square, which makes `seatBodyPath`'s `inset` an exact
+scaled copy about the centre — that is how the selected core is derived, and why
+marks drawn to the core's box keep every clearance they had against the body.
 
 ### Theming
 
@@ -181,10 +198,27 @@ A `SeatType.color` from the document is deliberately **not** themable — it is
 the map's own value under §4.7. Turn it off wholesale with
 `[typeColors]="false"` if you want the theme to own every fill.
 
-Overriding `selectedBg` does not cost you the selected cue: the ring and the
-figure are shape, not color. `heldBg`/`bookedBg` are the wash drawn over a
-taken seat's type colour, not the seat's own fill — see
+Overriding `selectedBg` does not cost you the selected cue: the core and the
+figure are shape, not color. Do set `selectedFg` alongside it, though — it is the
+core's fill, so it is most of a selected seat's area rather than just a label
+tint, and the two are read against each other. `heldBg`/`bookedBg` are the wash
+drawn over a taken seat's type colour, not the seat's own fill — see
 [The seat glyph](#the-seat-glyph) for the full state table.
+
+If you need the pre-1.1 flat selected seat back, the core is its own node:
+
+```css
+kerusi-seatmap .kerusi-seat__core {
+  display: none;
+}
+/* Without the core, these would be selectedBg on selectedBg. */
+kerusi-seatmap .kerusi-seat--selected .kerusi-seat__label,
+kerusi-seatmap .kerusi-seat--selected .kerusi-seat__occupant,
+kerusi-seatmap .kerusi-seat--selected .kerusi-seat__wheelchair {
+  fill: var(--kerusi-selected-fg, #f3ecff);
+  stroke: none;
+}
+```
 
 For anything the palette does not cover, each seat group carries class hooks:
 
@@ -197,7 +231,7 @@ For anything the palette does not cover, each seat group carries class hooks:
 | `.kerusi-seat--wheelchair`                                      | `accessibility.wheelchairAccessible`.      |
 | `.kerusi-seat--companion`                                       | Has companions (§4.6).                     |
 
-Inside a seat: `.kerusi-seat__box`, `__wash`, `__ring`, `__occupant`
+Inside a seat: `.kerusi-seat__box`, `__wash`, `__core`, `__occupant`
 (`__occupant--selected` / `--held` / `--booked`), `__label`, `__wheelchair`.
 
 ### Keyboard

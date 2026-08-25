@@ -4,6 +4,39 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+1. **A selected seat is drawn from two tones instead of one.** `selectedBg` is
+   now a frame around a `selectedFg` core, and the number, occupant figure and
+   wheelchair marker are tinted `selectedBg` to read against that core.
+
+   It was the other way round before — a near-white rim around a mid-purple
+   middle — which put the low-contrast tone on the outside boundary. A selected
+   seat therefore dissolved into a light page and sank into a dark one, and it
+   separated poorly from its neighbours in both. Holding a light tone and a dark
+   one at once means one of them always separates, whichever way the page is
+   themed, without the library detecting anything. Worst-case contrast against a
+   neighbouring seat, over every status and both themes, goes from 1.09:1 to
+   3.16:1.
+
+   Two knock-ons worth knowing about. The occupant figure and wheelchair marker
+   on a selected seat are now measured from the core's box rather than the
+   seat's, so they no longer cross the frame. And the number carries a
+   core-coloured halo, because it sits on the occupant silhouette rather than on
+   bare core — that lifts its real contrast from 2.6:1 to the full 4.95:1.
+
+   If you set `selectedBg` and left `selectedFg` at its default, set both now:
+   `selectedFg` is most of a selected seat's area rather than just a label tint.
+   `README.md` carries a CSS snippet that restores the flat pre-1.1 treatment.
+
+2. **`.kerusi-seat__ring` is now `.kerusi-seat__core`,** and it is filled rather
+   than stroked.
+
+3. **`seatRingStroke` is renamed `seatSelectedFrame`.** The old name is still
+   exported and still resolves to the same function; it is deprecated.
+
 ## [1.0.0] - 2026-08-19
 
 The library is renamed and rebuilt around the Kerusi Seat Map & Availability

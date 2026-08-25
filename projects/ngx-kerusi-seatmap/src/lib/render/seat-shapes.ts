@@ -29,8 +29,8 @@ const FRONT_RADIUS = 0.08;
 /** Corner radius at the back (soft, so the taper reads as a back), same units. */
 const BACK_RADIUS = 0.34;
 
-/** The selected ring's stroke, as a fraction of the seat's short edge. */
-const RING_STROKE = 0.1;
+/** The selected seat's frame, as a fraction of the seat's short edge. */
+const SELECTED_FRAME = 0.1;
 /** The held figure's outline stroke, same units. */
 const OCCUPANT_STROKE = 0.05;
 
@@ -75,11 +75,15 @@ function roundedPolygon(points: readonly Point[], radii: readonly number[]): str
  * no separate frame mark is drawn on top of it.
  *
  * `inset` shrinks the whole shape uniformly (used to derive the selected
- * ring, which must stay just inside this outline). It shrinks the bounding
- * box rather than offsetting each edge along its own normal, so the tapered
- * sides move in slightly less than the front and back do — at a 0.12 taper
- * that is a ~0.7% (cos 7°) difference, well under a viewBox unit and not
+ * seat's core, which must stay just inside this outline). It shrinks the
+ * bounding box rather than offsetting each edge along its own normal, so the
+ * tapered sides move in slightly less than the front and back do — at a 0.12
+ * taper that is a ~0.7% (cos 7°) difference, well under a viewBox unit and not
  * worth a true polygon offset for.
+ *
+ * Because a seat is square, an inset here is exactly a scaled copy about the
+ * centre: `seatBodyPath(x, y, s, s, k)` and `seatBodyPath(x + k, y + k, s - 2k,
+ * s - 2k)` emit the same `d`. {@link seatSelectedFrame} leans on that.
  */
 export function seatBodyPath(
   x: number,
@@ -105,10 +109,28 @@ export function seatBodyPath(
   return roundedPolygon(points, radii);
 }
 
-/** The stroke width for the selected seat's ring — see {@link seatBodyPath}'s `inset`. */
-export function seatRingStroke(width: number, height: number): number {
-  return Math.min(width, height) * RING_STROKE;
+/**
+ * The width of the frame around a selected seat's core — feed it straight to
+ * {@link seatBodyPath}'s `inset` to get the core.
+ *
+ * A seat is always square: `section-layout` places every one of them as
+ * `size × size`, in both the grid and the freeform mode. That makes the inset
+ * shape an *exact* scaled copy of the body about its centre, not merely a
+ * similar-looking one, so any mark that clears the body also clears the core
+ * when it is drawn to the core's own box. That is what lets the frame width
+ * stay a free tuning knob: nothing downstream has to be re-checked when it
+ * changes.
+ */
+export function seatSelectedFrame(width: number, height: number): number {
+  return Math.min(width, height) * SELECTED_FRAME;
 }
+
+/**
+ * @deprecated Renamed to {@link seatSelectedFrame}. The selected mark is a
+ * frame around a filled core now, not a stroked ring, so "stroke" no longer
+ * describes what the number is for.
+ */
+export const seatRingStroke = seatSelectedFrame;
 
 /**
  * A person seated in the seat, head toward the front: the non-colour cue for
@@ -122,7 +144,13 @@ export function seatRingStroke(width: number, height: number): number {
  *
  * It clears the tapered body on both axes: the torso spans 0.28–0.72 of the
  * width, well inside the back edge, which even at its narrowest (a 0.12
- * taper) is still 0.12–0.88.
+ * taper) is still 0.12–0.88. The margin is slim at the two hip corners,
+ * though, so pass the box the figure is meant to sit *on*: a selected seat
+ * draws it to the core's box, not the seat's, or the hips cross the frame.
+ *
+ * The ratios assume a square box, which is what `section-layout` always
+ * places. On a wide box the head, sized from the width, would outgrow the
+ * height.
  */
 export function seatOccupantPath(x: number, y: number, width: number, height: number): string {
   const cx = r(x + width * 0.5);
