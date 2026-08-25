@@ -7,8 +7,9 @@ import { KerusiMap, KerusiSession, KerusiState } from 'ngx-kerusi-seatmap';
  * symmetric `companions` pairs so they book together.
  *
  * Exercises: grid positioning, multiple sections-worth of column reuse via
- * skipped aisle columns, a dedicated non-seat row for the screen, price
- * tiers, companions, and all four availability states.
+ * skipped aisle columns, a screen addressed by col with a percentage `y`
+ * sitting it above the grid, price tiers, companions, and all four
+ * availability states.
  */
 
 /** A 12-seat standard row: two-seat wings at cols 1–2 / 13–14, an 8-seat
@@ -67,26 +68,28 @@ export const CINEMA_MAP: KerusiMap = {
       label: { en: 'Hall 3', ms: 'Dewan 3' },
       layout: 'grid',
       rows: [
-        // A row-less row, purely so the screen has somewhere to sit above row A.
-        { id: 'screen-row', label: '', index: 0 },
-        { id: 'A', label: 'A', index: 1 },
-        { id: 'B', label: 'B', index: 2 },
-        { id: 'C', label: 'C', index: 3 },
-        { id: 'D', label: 'D', index: 4 },
-        { id: 'E', label: 'E', index: 5 },
-        { id: 'L', label: 'L', index: 6 },
+        { id: 'A', label: 'A', index: 0 },
+        { id: 'B', label: 'B', index: 1 },
+        { id: 'C', label: 'C', index: 2 },
+        { id: 'D', label: 'D', index: 3 },
+        { id: 'E', label: 'E', index: 4 },
+        { id: 'L', label: 'L', index: 5 },
       ],
       elements: [
         {
           id: 'screen',
           kind: 'screen',
           label: 'SCREEN',
-          row: 'screen-row',
+          // `col` places it on the grid horizontally, same as a seat — a
+          // grid section has no seatless row to anchor it to vertically
+          // (§4.2 — rows are seat-derived), so `y` (a percentage of the
+          // section canvas, since no `row` is given) places it in the grid's
+          // own top margin instead, clear of row A. `width`/`height` stay
+          // cell-span units regardless (§ computeGridLayout).
           col: 1,
+          y: 1,
           width: 14,
-          // A thin bar, not a full row-tall cell — the screen shape's arc
-          // bulges in proportion to this height (§ screenPath).
-          height: 0.3,
+          height: 0.26,
         },
         { id: 'exit-left', kind: 'exit', label: 'EXIT', row: 'L', col: 0 },
         { id: 'exit-right', kind: 'exit', label: 'EXIT', row: 'L', col: 15 },

@@ -31,7 +31,8 @@ function stand(
   const out = { x: -Math.sin(rad), y: Math.cos(rad) };
 
   for (let r = 0; r < rows; r++) {
-    const depth = radius + r * 4;
+    // Later rows sit further from the pitch, not closer to it.
+    const depth = radius - r * 4;
     for (let c = 0; c < seatsPerRow; c++) {
       const offset = (c - (seatsPerRow - 1) / 2) * 4.2;
       seats.push({

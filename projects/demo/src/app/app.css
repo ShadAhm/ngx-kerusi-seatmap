@@ -426,12 +426,21 @@ main {
 
 /* --- theming the seat map ------------------------------------------------ */
 
-/* The library ships a palette tuned for a light page, so the light theme below
-   sets no `--kerusi-*` properties at all and just falls through to the
-   library's own defaults. The dark theme needs an explicit retheme, though —
-   none of this touches the component's inputs — every value below is a CSS
-   custom property the library reads through `var(--kerusi-*, <input value>)`,
-   so a stylesheet is all it takes. */
+/* The library ships a palette tuned for a light page, so the light theme
+   below overrides only one thing — see below — and otherwise falls through
+   to the library's own defaults. The dark theme needs a full explicit
+   retheme, though — none of this touches the component's inputs — every
+   value below is a CSS custom property the library reads through
+   `var(--kerusi-*, <input value>)`, so a stylesheet is all it takes. */
+
+/* The library's default muted-element fill (`#eef1f6`) happens to be the
+   exact same hex as this theme's `--panel-2`, which is what the seatmap's
+   own `.stage` container is painted — so a lavatory/pitch/aisle fixture was
+   rendering pixel-identical to its own card, i.e. invisible. One shade
+   darker keeps it reading as "muted" without calling attention to it. */
+:host([data-theme='light']) kerusi-seatmap {
+  --kerusi-element-muted-bg: #dde3ec;
+}
 
 :host([data-theme='dark']) kerusi-seatmap {
   --kerusi-available-bg: #2f6b45;
