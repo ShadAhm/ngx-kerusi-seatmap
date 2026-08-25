@@ -89,6 +89,7 @@ describe('KerusiSeatmapComponent', () => {
   const seat = (id: string) => el.querySelector<SVGGElement>(`[data-seat-id="${id}"]`)!;
   const svgs = () => [...el.querySelectorAll<SVGSVGElement>('svg.kerusi-section-svg')];
   const box = (id: string) => seat(id).querySelector<SVGPathElement>('.kerusi-seat__box')!;
+  const core = (id: string) => seat(id).querySelector<SVGPathElement>('.kerusi-seat__core')!;
 
   /**
    * Every on-curve point in a `d` string, as a flat `[x0, y0, x1, y1, ...]`
@@ -393,7 +394,7 @@ describe('KerusiSeatmapComponent', () => {
       expect(glyphFor('Available').querySelectorAll('path')).toHaveLength(1);
       expect(glyphFor('Blocked').querySelectorAll('path')).toHaveLength(1);
 
-      // Body + ring + occupant: the one status with a ring.
+      // Frame + core + occupant: the one status drawn from two tones.
       expect(glyphFor('Selected').querySelectorAll('path')).toHaveLength(3);
 
       // Body + wash + occupant.
@@ -471,10 +472,11 @@ describe('KerusiSeatmapComponent', () => {
       expect(seat('A1').querySelector('.kerusi-seat__occupant')).toBeNull();
     });
 
-    it('lets selection win the fill outright, the one deliberate exception', () => {
+    it('lets selection win the seat colour outright, the one deliberate exception', () => {
       host.selection.set(['A1']);
       fixture.detectChanges();
       expect(box('A1').style.fill).toBe('var(--kerusi-selected-bg, #7854af)');
+      expect(core('A1').style.fill).toBe('var(--kerusi-selected-fg, #f3ecff)');
     });
   });
 
@@ -491,14 +493,39 @@ describe('KerusiSeatmapComponent', () => {
 
     it('marks a selected seat by shape as well as color', () => {
       expect(seat('A1').querySelector('.kerusi-seat__occupant')).toBeNull();
-      expect(seat('A1').querySelector('.kerusi-seat__ring')).toBeNull();
+      expect(seat('A1').querySelector('.kerusi-seat__core')).toBeNull();
 
       host.selection.set(['A1']);
       fixture.detectChanges();
 
       expect(seat('A1').querySelector('.kerusi-seat__occupant--selected')).not.toBeNull();
-      expect(seat('A1').querySelector('.kerusi-seat__ring')).not.toBeNull();
+      expect(seat('A1').querySelector('.kerusi-seat__core')).not.toBeNull();
       expect(seat('A2').querySelector('.kerusi-seat__occupant')).toBeNull();
+    });
+
+    it('draws a selected seat from two tones, so one always separates from the page', () => {
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+
+      // The whole point of the treatment: a selected seat carries a light tone
+      // and a dark one at once, so it never depends on which way the consumer
+      // themed the page around it.
+      const frame = box('A1').style.fill;
+      const plate = core('A1').style.fill;
+      expect(frame).toContain('--kerusi-selected-bg');
+      expect(plate).toContain('--kerusi-selected-fg');
+      expect(frame).not.toBe(plate);
+
+      // Everything over the core takes the frame's colour, not the core's.
+      const label = seat('A1').querySelector<SVGTextElement>('.kerusi-seat__label')!;
+      expect(label.style.fill).toBe('var(--kerusi-selected-bg, #7854af)');
+      expect(label.style.stroke).toBe('var(--kerusi-selected-fg, #f3ecff)');
+    });
+
+    it('leaves an unselected seat’s label unhaloed', () => {
+      const label = seat('A1').querySelector<SVGTextElement>('.kerusi-seat__label')!;
+      expect(label.style.stroke).toBe('none');
+      expect(label.getAttribute('stroke-width')).toBe('0');
     });
 
     it('leans the occupant with the seat while the number stays upright', () => {
@@ -510,14 +537,51 @@ describe('KerusiSeatmapComponent', () => {
       expect(g.querySelector('.kerusi-seat__label')).not.toBeNull();
     });
 
-    it('keeps the selected ring inside the seat body', () => {
+    it('keeps the selected core strictly inside the frame', () => {
       host.selection.set(['A1']);
       fixture.detectChanges();
-      const ring = seat('A1').querySelector<SVGPathElement>('.kerusi-seat__ring')!;
       const bodyPoints = pathPoints(box('A1').getAttribute('d')!);
-      const ringPoints = pathPoints(ring.getAttribute('d')!);
-      expect(Math.min(...ringPoints)).toBeGreaterThan(Math.min(...bodyPoints));
-      expect(Math.max(...ringPoints)).toBeLessThan(Math.max(...bodyPoints));
+      const corePoints = pathPoints(core('A1').getAttribute('d')!);
+      expect(Math.min(...corePoints)).toBeGreaterThan(Math.min(...bodyPoints));
+      expect(Math.max(...corePoints)).toBeLessThan(Math.max(...bodyPoints));
+    });
+
+    it('keeps a selected seat’s occupant on the core, not across the frame', () => {
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+      const corePoints = pathPoints(core('A1').getAttribute('d')!);
+      const occupant = seat('A1').querySelector<SVGPathElement>('.kerusi-seat__occupant')!;
+      const occupantPoints = pathPoints(occupant.getAttribute('d')!);
+      // A figure tinted `selectedBg` that crossed onto a frame filled
+      // `selectedBg` would read as a hard nub at the hips.
+      expect(Math.min(...occupantPoints)).toBeGreaterThan(Math.min(...corePoints));
+      expect(Math.max(...occupantPoints)).toBeLessThan(Math.max(...corePoints));
+    });
+
+    it('leaves a booked occupant on the seat’s own box, not inset like a selected one', () => {
+      // Only a selected seat has a core to move its marks into. Collapsing that
+      // conditional into an unconditional inset would silently shrink every
+      // other status' figure.
+      host.state.set({
+        kerusi: '1.0',
+        mapId: 'venue',
+        updatedAt: 't',
+        seats: { A1: { status: 'booked' } },
+      });
+      fixture.detectChanges();
+      const booked = pathPoints(
+        seat('A1').querySelector<SVGPathElement>('.kerusi-seat__occupant')!.getAttribute('d')!,
+      );
+
+      host.state.set({ kerusi: '1.0', mapId: 'venue', updatedAt: 't', seats: {} });
+      host.selection.set(['A1']);
+      fixture.detectChanges();
+      const picked = pathPoints(
+        seat('A1').querySelector<SVGPathElement>('.kerusi-seat__occupant')!.getAttribute('d')!,
+      );
+
+      const spread = (points: number[]) => Math.max(...points) - Math.min(...points);
+      expect(spread(picked)).toBeLessThan(spread(booked));
     });
   });
 });

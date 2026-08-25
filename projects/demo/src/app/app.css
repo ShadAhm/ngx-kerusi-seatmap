@@ -436,8 +436,11 @@ main {
 :host([data-theme='dark']) kerusi-seatmap {
   --kerusi-available-bg: #2f6b45;
   --kerusi-available-fg: #d7f5e2;
-  /* The one status that still owns the fill outright. */
-  --kerusi-selected-bg: #8b6ad6;
+  /* The one status that still owns its colour outright — and the only one drawn
+     from two tones: `-bg` frames the seat, `-fg` fills the core inside it and is
+     what the number is read against, so the pair needs real contrast with each
+     other rather than just with the page. */
+  --kerusi-selected-bg: #7a5bc8;
   --kerusi-selected-fg: #f8f4ff;
   /* held/booked no longer change the seat's own colour — a seat keeps its
      type colour under a *Bg wash, with *Fg tinting the occupant figure that

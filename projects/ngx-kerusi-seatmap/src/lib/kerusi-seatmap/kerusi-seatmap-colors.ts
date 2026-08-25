@@ -11,15 +11,29 @@ import { RenderSeat } from '../render/render-model';
  * seat — exactly where a busy map needed it most. Now a seat keeps its type
  * color everywhere; status is read from a dimming wash and an occupant figure
  * instead (see {@link seatFill}). `selected` is the one deliberate exception:
- * it still owns the fill outright, so your own picks are never ambiguous.
+ * it still owns the color outright, so your own picks are never ambiguous.
+ *
+ * Selection is also the one state drawn from *two* tones rather than one:
+ * `selectedBg` frames the seat and `selectedFg` fills a core inside it (see
+ * {@link seatCoreFill}). An earlier revision had this the other way round — a
+ * near-white rim around a mid-purple middle — which put the low-contrast tone
+ * on the outside boundary, so a selected seat dissolved into a light page and
+ * sank into a dark one. Holding both a light and a dark tone means one of them
+ * always separates from the page, whichever way a consumer has themed it, and
+ * the library never has to ask which that is.
  */
 export interface KerusiSeatmapColors {
   /** An available seat with no type color. */
   availableBg?: string;
   availableFg?: string;
   /**
-   * A seat the user has picked. The one status that still owns the fill —
-   * see {@link seatFill} — so your own picks always pop out of the map.
+   * A seat the user has picked. The one status that still owns the seat's
+   * color outright — see {@link seatFill} — so your own picks always pop out
+   * of the map. `selectedBg` frames the seat and `selectedFg` fills the core
+   * inside that frame, which is also what the label and the occupant figure
+   * are tinted with. Both carry real visual weight, so override them as a
+   * pair; swapping the two gives the inverse treatment, a light frame around
+   * a dark core, which works just as well.
    */
   selectedBg?: string;
   selectedFg?: string;
@@ -107,9 +121,13 @@ export function cssVarName(key: keyof KerusiSeatmapColors): string {
 }
 
 /**
- * The fill for a seat, in precedence order:
+ * The fill for a seat's body, in precedence order:
  *
  *   selected → blocked → `SeatType.color` → available
+ *
+ * For a selected seat this is the *frame*: {@link seatCoreFill}'s core is drawn
+ * inside it and covers most of the body, so `selectedBg` reads as a border
+ * rather than as the seat's area.
  *
  * A held or booked seat is deliberately *not* in this list: it keeps its type
  * color, same as an available one, because status is read from
@@ -135,7 +153,21 @@ export function seatFill(
   return (useTypeColors && seat.typeColor) || cssVar('availableBg', colors.availableBg);
 }
 
-/** The label color to pair with {@link seatFill}. */
+/**
+ * The bright core inside a selected seat's frame — the second of the two tones
+ * selection is drawn from, see the module doc comment. Everything drawn over
+ * the core (the label, the occupant figure, the wheelchair marker) is tinted
+ * `selectedBg` to read against it.
+ */
+export function seatCoreFill(colors: Required<KerusiSeatmapColors>): string {
+  return cssVar('selectedFg', colors.selectedFg);
+}
+
+/**
+ * The label color to pair with {@link seatFill} — except for a selected seat,
+ * where the label sits on {@link seatCoreFill}'s core rather than on the frame,
+ * so the two tones swap round.
+ */
 export function seatTextFill(
   seat: RenderSeat,
   selected: boolean,
@@ -143,7 +175,7 @@ export function seatTextFill(
   useTypeColors: boolean,
 ): string {
   if (selected) {
-    return cssVar('selectedFg', colors.selectedFg);
+    return cssVar('selectedBg', colors.selectedBg);
   }
   if (seat.status === 'blocked') {
     return cssVar('blockedFg', colors.blockedFg);
@@ -174,9 +206,12 @@ export function seatOccupantVariant(
 }
 
 /**
- * The tint for an occupant figure: solid `selectedFg`/`bookedFg` for a seat
+ * The tint for an occupant figure: solid `selectedBg`/`bookedFg` for a seat
  * that is settled (yours, or someone else's), or `heldFg` for the hollow
- * outline that marks a hold still in progress.
+ * outline that marks a hold still in progress. A selected seat's figure is
+ * drawn on {@link seatCoreFill}'s core, so it takes the frame's color rather
+ * than the core's — the opposite way round from every other variant, which
+ * sits on the seat's own fill.
  */
 export function occupantTint(
   variant: SeatOccupantVariant,
@@ -184,7 +219,7 @@ export function occupantTint(
 ): string {
   switch (variant) {
     case 'selected':
-      return cssVar('selectedFg', colors.selectedFg);
+      return cssVar('selectedBg', colors.selectedBg);
     case 'held':
       return cssVar('heldFg', colors.heldFg);
     case 'booked':

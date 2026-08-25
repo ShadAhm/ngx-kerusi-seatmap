@@ -57,7 +57,7 @@
 /* Mirrors `.kerusi-seat__occupant--*` on the map, so the key matches what it
    is keying. Fill/stroke colour is bound inline; these set the weight. */
 .kerusi-legend__occupant--selected {
-  opacity: 0.35;
+  opacity: 0.2;
 }
 
 .kerusi-legend__occupant--booked {

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { seatBodyPath, seatOccupantPath, seatOccupantStroke, seatRingStroke } from './seat-shapes';
+import {
+  seatBodyPath,
+  seatOccupantPath,
+  seatOccupantStroke,
+  seatRingStroke,
+  seatSelectedFrame,
+} from './seat-shapes';
 
 /** Every number in an SVG path's `d`, in order. */
 const numbers = (d: string): number[] => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
@@ -90,7 +96,7 @@ describe('seatBodyPath', () => {
     expect(d.match(/A /g)).toHaveLength(4);
   });
 
-  it('insets uniformly, for the selected ring to reuse', () => {
+  it('insets uniformly, for the selected core to reuse', () => {
     const outer = points(seatBodyPath(0, 0, 28, 28));
     const inner = points(seatBodyPath(0, 0, 28, 28, 1.4));
     // Every inner extreme sits strictly inside the outer shape.
@@ -99,18 +105,32 @@ describe('seatBodyPath', () => {
   });
 });
 
-describe('seatRingStroke', () => {
+describe('seatSelectedFrame', () => {
   it("takes its width from the seat's short edge", () => {
-    expect(seatRingStroke(28, 28)).toBeCloseTo(2.8);
-    expect(seatRingStroke(40, 20)).toBeCloseTo(2);
+    expect(seatSelectedFrame(28, 28)).toBeCloseTo(2.8);
+    expect(seatSelectedFrame(40, 20)).toBeCloseTo(2);
   });
 
-  it('keeps the ring, inset by half its own stroke, inside the seat body', () => {
-    const stroke = seatRingStroke(28, 28);
-    const ring = points(seatBodyPath(0, 0, 28, 28, stroke / 2));
+  it('keeps the core, inset by the frame, inside the seat body', () => {
+    const frame = seatSelectedFrame(28, 28);
+    const core = points(seatBodyPath(0, 0, 28, 28, frame));
     const body = points(seatBodyPath(0, 0, 28, 28));
-    expect(Math.min(...ring)).toBeGreaterThan(Math.min(...body));
-    expect(Math.max(...ring)).toBeLessThan(Math.max(...body));
+    expect(Math.min(...core)).toBeGreaterThan(Math.min(...body));
+    expect(Math.max(...core)).toBeLessThan(Math.max(...body));
+  });
+
+  it('insets to an exact scaled copy, so a mark clearing the body clears the core', () => {
+    // This is what lets the selected seat draw its occupant and wheelchair dot
+    // to the core's box and inherit every clearance they had against the body —
+    // and what keeps the frame width free to change without re-checking them.
+    const frame = seatSelectedFrame(100, 100);
+    expect(seatBodyPath(0, 0, 100, 100, frame)).toBe(
+      seatBodyPath(frame, frame, 100 - frame * 2, 100 - frame * 2),
+    );
+  });
+
+  it('still answers to its old name, which is exported', () => {
+    expect(seatRingStroke).toBe(seatSelectedFrame);
   });
 });
 

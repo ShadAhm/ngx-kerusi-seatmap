@@ -40,18 +40,15 @@
               <path [attr.d]="glyphBody" [style.fill]="washFillOf(status.kind)" opacity="0.5" />
             }
             @if (status.kind === 'selected') {
-              <path
-                [attr.d]="glyphRing"
-                fill="none"
-                [attr.stroke-width]="glyphRingStroke"
-                [style.stroke]="selectedFg()"
-              />
+              <!-- Two tones, same as the map: the body above is the frame, this
+                   is the core inside it. -->
+              <path [attr.d]="glyphCore" [style.fill]="coreFill()" />
             }
             @if (hasOccupant(status.kind)) {
               <path
-                [attr.d]="glyphOccupant"
+                [attr.d]="occupantPathOf(status.kind)"
                 class="kerusi-legend__occupant kerusi-legend__occupant--{{ status.kind }}"
-                [attr.stroke-width]="glyphOccupantStroke"
+                [attr.stroke-width]="occupantStrokeWidthOf(status.kind)"
                 [style.fill]="occupantFillOf(status.kind)"
                 [style.stroke]="occupantStrokeOf(status.kind)"
               />

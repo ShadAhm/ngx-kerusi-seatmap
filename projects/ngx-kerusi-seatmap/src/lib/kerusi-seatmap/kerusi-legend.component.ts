@@ -5,7 +5,7 @@ import {
   seatBodyPath,
   seatOccupantPath,
   seatOccupantStroke,
-  seatRingStroke,
+  seatSelectedFrame,
 } from '../render/seat-shapes';
 import {
   cssVar,
@@ -15,6 +15,7 @@ import {
   occupantStrokeFor,
   readableOn,
   SeatOccupantVariant,
+  seatCoreFill,
   seatWashFill,
 } from './kerusi-seatmap-colors';
 
@@ -110,16 +111,34 @@ export class KerusiLegendComponent {
   protected readonly glyphSize = 16;
 
   protected readonly glyphBody = seatBodyPath(0, 0, this.glyphSize, this.glyphSize);
-  protected readonly glyphRingStroke = seatRingStroke(this.glyphSize, this.glyphSize);
-  protected readonly glyphRing = seatBodyPath(
-    0,
-    0,
-    this.glyphSize,
-    this.glyphSize,
-    this.glyphRingStroke / 2,
-  );
+
+  /** The selected swatch's frame width, and the core it leaves inside itself. */
+  private readonly glyphFrame = seatSelectedFrame(this.glyphSize, this.glyphSize);
+  private readonly glyphCoreSize = this.glyphSize - this.glyphFrame * 2;
+  protected readonly glyphCore = seatBodyPath(0, 0, this.glyphSize, this.glyphSize, this.glyphFrame);
+
   protected readonly glyphOccupant = seatOccupantPath(0, 0, this.glyphSize, this.glyphSize);
   protected readonly glyphOccupantStroke = seatOccupantStroke(this.glyphSize, this.glyphSize);
+
+  /** The selected swatch's figure sits on the core, so it is drawn to the core. */
+  private readonly glyphCoreOccupant = seatOccupantPath(
+    this.glyphFrame,
+    this.glyphFrame,
+    this.glyphCoreSize,
+    this.glyphCoreSize,
+  );
+  private readonly glyphCoreOccupantStroke = seatOccupantStroke(
+    this.glyphCoreSize,
+    this.glyphCoreSize,
+  );
+
+  protected occupantPathOf(variant: SeatOccupantVariant): string {
+    return variant === 'selected' ? this.glyphCoreOccupant : this.glyphOccupant;
+  }
+
+  protected occupantStrokeWidthOf(variant: SeatOccupantVariant): number {
+    return variant === 'selected' ? this.glyphCoreOccupantStroke : this.glyphOccupantStroke;
+  }
 
   protected hasWash(kind: StatusKind): kind is 'held' | 'booked' {
     return kind === 'held' || kind === 'booked';
@@ -141,8 +160,8 @@ export class KerusiLegendComponent {
     return occupantStrokeFor(variant, this.colors());
   }
 
-  protected selectedFg(): string {
-    return cssVar('selectedFg', this.colors().selectedFg);
+  protected coreFill(): string {
+    return seatCoreFill(this.colors());
   }
 
   protected price(entry: RenderLegendEntry): string {
