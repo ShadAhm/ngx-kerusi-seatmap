@@ -6,6 +6,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+1. **`headroomRows`, reserving space above the first row of a grid section.**
+   Counted in row pitches, so it scales with `seatSize`, and defaulting to `0`
+   so no existing layout moves.
+
+   A grid section's only vertical slack was its padding — a uniform margin of
+   half a seat — which had to hold a cinema screen *and* the throw between that
+   screen and the front row. There was no way to widen it from a document
+   either: rows are seat-derived and `RenderRow.index` is a dense ordinal, so
+   numbering the front row 4 to leave four empty rows just renumbers it back to
+   0. Venues that need a real void in front of the seating now say so directly,
+   rather than inflating `seatSize` to borrow margin and enlarging every seat as
+   a side effect.
+
 ### Changed
 
 1. **A selected seat is drawn from two tones instead of one.** `selectedBg` is

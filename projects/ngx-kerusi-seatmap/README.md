@@ -59,6 +59,7 @@ import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
 | `typeColors`                      | `boolean`             | `true`           | Let an available seat take its `SeatType.color` (§4.7).                                                                         |
 | `seatSize`                        | `number`              | `28`             | Grid cell edge, in viewBox units.                                                                                               |
 | `seatGap`                         | `number`              | `6`              | Gap between grid cells.                                                                                                         |
+| `headroomRows`                    | `number`              | `0`              | Grid only: rows' worth of empty space above the first row, for a screen or stage. In row pitches, so it tracks `seatSize`.      |
 | `freeformBasis`                   | `number`              | `1000`           | Freeform viewBox width; height follows the aspect ratio.                                                                        |
 | `unitScale`                       | `number`              | `1`              | CSS pixels per viewBox unit. Caps each section at its natural size so a narrow section and a wide one draw seats the same size. |
 | `showSectionLabels`               | `boolean`             | `true`           |                                                                                                                                 |

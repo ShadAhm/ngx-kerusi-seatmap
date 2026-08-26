@@ -79,6 +79,7 @@
           (selectionChange)="onSelectionChange($event)"
           [locale]="locale()"
           [seatSize]="scenario().seatSize ?? 28"
+          [headroomRows]="scenario().headroomRows ?? 0"
           [typeColors]="typeColors()"
           [showLegend]="showLegend()"
           (seatDisallowed)="onDisallowed($event)"
