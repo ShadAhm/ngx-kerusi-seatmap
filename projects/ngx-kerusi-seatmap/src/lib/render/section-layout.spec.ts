@@ -113,6 +113,68 @@ describe('grid-addressed elements', () => {
   const lastRight = (seats: readonly { x: number; width: number }[]) =>
     Math.max(...seats.map((s) => s.x + s.width));
   const lav = (layout: { elements: readonly { x: number; width: number }[] }) => layout.elements[0];
+
+  it('places an element carrying a percentage y against the canvas, not a row', () => {
+    // The cinema screen's own case: no `row`, so `y` reads as a percentage of
+    // the section canvas and the element floats free of the row lattice.
+    const withScreen = mapWith({
+      id: 'house',
+      layout: 'grid',
+      seats: [{ id: 'A1', row: 'A', col: 1, type: 'standard' }],
+      elements: [{ id: 'screen', kind: 'screen', label: 'SCREEN', col: 1, y: 50, height: 0.5 }],
+    }).sections[0];
+
+    const layout = placed(withScreen, { seatSize: 20, seatGap: 10 });
+    const [screen] = layout.elements;
+    // Height is still a row span, and y centers the box at 50% of the canvas.
+    expect(screen.height).toBe(0.5 * 30 - 10);
+    expect(screen.centerY).toBeCloseTo(layout.height / 2);
+  });
+});
+
+describe('grid headroom', () => {
+  const hall = mapWith({
+    id: 'house',
+    layout: 'grid',
+    seats: [
+      { id: 'A1', row: 'A', col: 1, type: 'standard' },
+      { id: 'B1', row: 'B', col: 1, type: 'standard' },
+    ],
+    elements: [{ id: 'exit', kind: 'exit', label: 'EXIT', row: 'B', col: 3 }],
+  }).sections[0];
+
+  const opts = { seatSize: 20, seatGap: 10 };
+
+  it('is inert by default, so an ordinary grid is unchanged', () => {
+    expect(placed(hall, opts)).toEqual(placed(hall, { ...opts, headroomRows: 0 }));
+  });
+
+  it('pushes the first row down by whole row pitches', () => {
+    const bare = placed(hall, opts);
+    const roomy = placed(hall, { ...opts, headroomRows: 4 });
+    // Pitch is 30, so four rows of headroom is 120.
+    expect(roomy.seats[0].y - bare.seats[0].y).toBe(4 * 30);
+  });
+
+  it('grows the canvas by the reserved band, rather than crowding the rows', () => {
+    const bare = placed(hall, opts);
+    const roomy = placed(hall, { ...opts, headroomRows: 4 });
+    expect(roomy.height - bare.height).toBe(4 * 30);
+    // Row spacing itself is untouched — the band is added, not redistributed.
+    expect(roomy.seats[1].y - roomy.seats[0].y).toBe(bare.seats[1].y - bare.seats[0].y);
+  });
+
+  it('carries a row-addressed element down with its row', () => {
+    const roomy = placed(hall, { ...opts, headroomRows: 4 });
+    // The exit sits in row B, so it must stay level with row B's seat.
+    expect(roomy.elements[0].y).toBe(roomy.seats[1].y);
+  });
+
+  it('accepts a fractional band, since a screen is not a whole row tall', () => {
+    const bare = placed(hall, opts);
+    const roomy = placed(hall, { ...opts, headroomRows: 1.5 });
+    expect(roomy.seats[0].y - bare.seats[0].y).toBe(1.5 * 30);
+  });
 });
 
 describe('freeform layout', () => {

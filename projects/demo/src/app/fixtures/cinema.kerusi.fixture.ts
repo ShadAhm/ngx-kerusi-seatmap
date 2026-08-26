@@ -8,8 +8,8 @@ import { KerusiMap, KerusiSession, KerusiState } from 'ngx-kerusi-seatmap';
  *
  * Exercises: grid positioning, multiple sections-worth of column reuse via
  * skipped aisle columns, a screen addressed by col with a percentage `y`
- * sitting it above the grid, price tiers, companions, and all four
- * availability states.
+ * sitting it in the headroom the grid reserves above row A, price tiers,
+ * companions, and all four availability states.
  */
 
 /** A 12-seat standard row: two-seat wings at cols 1–2 / 13–14, an 8-seat
@@ -80,16 +80,17 @@ export const CINEMA_MAP: KerusiMap = {
           id: 'screen',
           kind: 'screen',
           label: 'SCREEN',
-          // `col` places it on the grid horizontally, same as a seat — a
-          // grid section has no seatless row to anchor it to vertically
-          // (§4.2 — rows are seat-derived), so `y` (a percentage of the
-          // section canvas, since no `row` is given) places it in the grid's
-          // own top margin instead, clear of row A. `width`/`height` stay
-          // cell-span units regardless (§ computeGridLayout).
+          // `col` places it on the grid horizontally, same as a seat. There is
+          // no seatless row to anchor it to vertically (§4.2 — rows are
+          // seat-derived), so `y` — a percentage of the section canvas, since
+          // no `row` is given — sits it near the top, inside the band the
+          // scenario's `headroomRows` reserves above row A. `width`/`height`
+          // stay cell-span units regardless (§ computeGridLayout); the arc
+          // bulges a further `height * 1.6` toward the seats (§ screenPath).
           col: 1,
-          y: 1,
+          y: 9,
           width: 14,
-          height: 0.26,
+          height: 0.55,
         },
         { id: 'exit-left', kind: 'exit', label: 'EXIT', row: 'L', col: 0 },
         { id: 'exit-right', kind: 'exit', label: 'EXIT', row: 'L', col: 15 },
