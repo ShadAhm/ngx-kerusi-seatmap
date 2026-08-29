@@ -157,10 +157,114 @@ describe('§4.4 element validation', () => {
     expect(violations[0].severity).toBe('warning');
   });
 
-  it('warns when an element is addressed in the other mode from its section', () => {
+  it('rejects an element addressed in the other mode from its section (§4.4.1)', () => {
     const violations = checkKerusiMap(withElements([{ id: 'e1', kind: 'exit', x: 50, y: 50 }]));
-    expect(violations.map((v) => v.rule)).toEqual(['element-position-mode']);
-    expect(violations[0].severity).toBe('warning');
+    expect(violations.map((v) => v.rule)).toEqual(['element-layout-mismatch']);
+    // Rev 12 binds an element to its section's mode exactly as §4.5 binds its
+    // seats, so this is a MUST — it was a warning up to 1.0.
+    expect(violations[0].severity).toBe('error');
+  });
+
+  it('accepts a row-only element in a grid section, which spans the full width', () => {
+    expect(checkKerusiMap(withElements([{ id: 'e1', kind: 'screen', row: '1' }]))).toEqual([]);
+  });
+
+  it('rejects a grid span that is not a positive integer (§4.4.1)', () => {
+    const violations = checkKerusiMap(
+      withElements([{ id: 'e1', kind: 'screen', col: 1, width: 2.5, height: 0 }]),
+    );
+    expect(violations.map((v) => v.rule)).toEqual(['element-span-invalid', 'element-span-invalid']);
+  });
+
+  it('leaves a freeform element\u2019s percentage width and height alone', () => {
+    const map = clone(BUS_MAP);
+    map.sections[0] = {
+      id: 'stalls',
+      layout: 'freeform',
+      seats: [{ id: 's1', x: 50, y: 50, type: map.legend[0].id }],
+      elements: [{ id: 'screen', kind: 'screen', x: 50, y: 5, width: 74.5, height: 5 }],
+    } as never;
+    expect(checkKerusiMap(map)).toEqual([]);
+  });
+
+  it('rejects a row span reaching past the section\u2019s last row (§4.2.1)', () => {
+    const map = clone(BUS_MAP);
+    map.sections[0].rows = [
+      { id: 'screen', index: 0 },
+      { id: '1', index: 1 },
+    ];
+    map.sections[0].elements = [
+      { id: 'screen', kind: 'screen', row: 'screen', height: 3 },
+    ] as never;
+    expect(checkKerusiMap(map).map((v) => v.rule)).toEqual(['element-row-span-overrun']);
+  });
+
+  it('rejects an element row that the registry does not declare (§4.6)', () => {
+    const map = clone(BUS_MAP);
+    map.sections[0].rows = [{ id: '1', index: 0 }];
+    map.sections[0].elements = [{ id: 'e1', kind: 'exit', row: 'nowhere', col: 3 }] as never;
+    expect(checkKerusiMap(map).map((v) => v.rule)).toEqual(['element-row-unresolved']);
+  });
+});
+
+describe('§5.1.1 RFC 3339 timestamps', () => {
+  const state = (updatedAt: string): unknown => ({
+    kerusi: '1.0',
+    mapId: 'm',
+    updatedAt,
+    seats: {},
+  });
+
+  it('accepts the profile the published schemas mean by format: date-time', () => {
+    expect(checkKerusiState(state('2026-08-17T09:14:00Z'))).toEqual([]);
+    expect(checkKerusiState(state('2026-08-17T21:15:00+08:00'))).toEqual([]);
+    expect(checkKerusiState(state('2026-08-17T09:14:00.123Z'))).toEqual([]);
+  });
+
+  it('rejects the ISO 8601 forms rev 13 narrowed away', () => {
+    // Seconds omitted, basic format, and a local time with no offset: each is
+    // ISO 8601 and none can be parsed interoperably.
+    for (const value of ['2026-08-17T09:14Z', '20260817T091400Z', '2026-08-17T09:14:00']) {
+      expect(checkKerusiState(state(value)).map((v) => v.rule)).toEqual(['state-updatedat-format']);
+    }
+  });
+
+  it('rejects a shape-valid but impossible date', () => {
+    expect(checkKerusiState(state('2026-02-31T09:14:00Z')).map((v) => v.rule)).toEqual([
+      'state-updatedat-format',
+    ]);
+  });
+
+  it('checks holdExpires, which a countdown depends on', () => {
+    const doc = {
+      kerusi: '1.0',
+      mapId: 'm',
+      updatedAt: '2026-08-17T09:14:00Z',
+      seats: { A1: { status: 'held', holdExpires: '2026-08-17T09:29Z' } },
+    };
+    const violations = checkKerusiState(doc);
+    expect(violations.map((v) => v.rule)).toEqual(['seat-status-hold-expires-format']);
+    expect(violations[0].id).toBe('A1');
+  });
+
+  it('checks a delta and a session too', () => {
+    expect(
+      checkKerusiStateDelta({
+        kerusi: '1.0',
+        mapId: 'm',
+        updatedAt: 'yesterday',
+        changes: {},
+      }).map((v) => v.rule),
+    ).toEqual(['state-updatedat-format']);
+    expect(
+      checkKerusiSession({
+        kerusi: '1.0',
+        id: 's',
+        mapId: 'm',
+        startsAt: '2026-08-17T19:30',
+        endsAt: '2026-08-17T21:30:00+08:00',
+      }).map((v) => v.rule),
+    ).toEqual(['session-startsat-format']);
   });
 });
 

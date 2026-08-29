@@ -1,0 +1,42 @@
+{
+  "kerusi": "1.0",
+  "id": "bus-42-2026-08-17",
+  "domain": "bus",
+  "legend": [
+    {
+      "id": "standard",
+      "label": "Standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "main",
+      "seats": [
+        {
+          "id": "1A",
+          "row": "1",
+          "col": 1,
+          "type": "standard"
+        },
+        {
+          "id": "1B",
+          "row": "1",
+          "col": 2,
+          "type": "standard"
+        },
+        {
+          "id": "1C",
+          "row": "1",
+          "col": 4,
+          "type": "standard"
+        },
+        {
+          "id": "1D",
+          "row": "1",
+          "col": 5,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

@@ -24,8 +24,6 @@ export interface Scenario {
   session?: KerusiSession;
   /** Seat size in viewBox units — dense venues want smaller cells. */
   seatSize?: number;
-  /** Rows' worth of empty space above row 0, for a screen or stage to sit in. */
-  headroomRows?: number;
 }
 
 export const SCENARIOS: readonly Scenario[] = [
@@ -39,7 +37,7 @@ export const SCENARIOS: readonly Scenario[] = [
     highlights: [
       'layout: "grid" — every seat has col, no seat has x or y',
       'Two aisles as skipped columns split each row into three blocks',
-      'headroomRows reserves a four-row void between the screen and row A',
+      'Two empty rows (\u00a74.2.2) hold the screen and the throw in front of it',
       'Screen and exits are non-bookable Elements',
       'Love seats are symmetric companions — they book as a pair',
       'A wheelchair bay declares accessibility, not an attribute tag',
@@ -48,10 +46,6 @@ export const SCENARIOS: readonly Scenario[] = [
     state: CINEMA_STATE,
     session: CINEMA_SESSION,
     seatSize: 32,
-    // The throw between screen and front row. The grid's own padding is a
-    // uniform margin of half a cell — nowhere near a real hall's proportions —
-    // so the space is reserved here instead (§computeGridLayout).
-    headroomRows: 2.5,
   },
   {
     id: 'aircraft',

@@ -1,0 +1,28 @@
+{
+  "kerusi": "1.0",
+  "id": "dangling-row",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "rows": [
+        {
+          "id": "A",
+          "index": 0
+        }
+      ],
+      "seats": [
+        {
+          "id": "a",
+          "row": "B",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

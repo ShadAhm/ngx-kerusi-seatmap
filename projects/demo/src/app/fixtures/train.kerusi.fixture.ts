@@ -129,16 +129,27 @@ export const TRAIN_MAP: KerusiMap = {
       index: 2,
       label: { en: 'Carriage B — table bays', ms: 'Gerabak B — Meja' },
       layout: 'grid',
-      rows: Array.from({ length: 6 }, (_, i) => ({
-        id: `B${i + 1}`,
-        label: `${i + 1}`,
-        index: i,
-      })),
+      // Seat rows and the empty rows between them, interleaved: each facing
+      // pair is separated by a seatless row the table occupies (§4.2.2). A
+      // table is a whole row of space here, not a fraction of one — §4.4.1
+      // makes a grid span a positive integer count of cells, and §4.2.2 leaves
+      // "what a row is worth in pixels" to the renderer.
+      rows: [
+        { id: 'B1', label: '1', index: 0 },
+        { id: 'table-row-1', index: 1 },
+        { id: 'B2', label: '2', index: 2 },
+        { id: 'B3', label: '3', index: 3 },
+        { id: 'table-row-2', index: 4 },
+        { id: 'B4', label: '4', index: 5 },
+        { id: 'B5', label: '5', index: 6 },
+        { id: 'table-row-3', index: 7 },
+        { id: 'B6', label: '6', index: 8 },
+      ],
       elements: [
         // A table sits between each facing pair, spanning both sides of the aisle.
-        { id: 'table-1', kind: 'table', label: 'Table', row: 'B1', col: 1, width: 5, height: 0.6 },
-        { id: 'table-2', kind: 'table', label: 'Table', row: 'B3', col: 1, width: 5, height: 0.6 },
-        { id: 'table-3', kind: 'table', label: 'Table', row: 'B5', col: 1, width: 5, height: 0.6 },
+        { id: 'table-1', kind: 'table', label: 'Table', row: 'table-row-1', col: 1, width: 5 },
+        { id: 'table-2', kind: 'table', label: 'Table', row: 'table-row-2', col: 1, width: 5 },
+        { id: 'table-3', kind: 'table', label: 'Table', row: 'table-row-3', col: 1, width: 5 },
         { id: 'b-door', kind: 'exit', label: 'Door', row: 'B6', col: 7 },
       ],
       seats: [

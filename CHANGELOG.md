@@ -4,26 +4,82 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-08-29
+
+Brings the library up to **rev 13** of the Kerusi standard. The conformance
+report was written against rev 9; revisions 10 through 13 have since added
+empty rows, normative element spans, direction labels and an RFC 3339 timestamp
+requirement. `docs/kerusi-conformance.md` is reassessed against rev 13.
 
 ### Added
 
-1. **`headroomRows`, reserving space above the first row of a grid section.**
-   Counted in row pitches, so it scales with `seatSize`, and defaulting to `0`
-   so no existing layout moves.
+1. **Empty rows reserve vertical space, because the document says so.**
+   `Section.rows`, where present, is now read as the section's complete row
+   registry (§4.2), so a `RowMeta` no seat references is materialized as a real
+   row and reserves the space one row of seats would (§4.2.2). That is how a
+   grid section opens the throw between a cinema screen and row A, or a
+   cross-aisle between two rows.
 
-   A grid section's only vertical slack was its padding — a uniform margin of
-   half a seat — which had to hold a cinema screen *and* the throw between that
-   screen and the front row. There was no way to widen it from a document
-   either: rows are seat-derived and `RenderRow.index` is a dense ordinal, so
-   numbering the front row 4 to leave four empty rows just renumbers it back to
-   0. Venues that need a real void in front of the seating now say so directly,
-   rather than inflating `seatSize` to borrow margin and enlarging every seat as
-   a side effect.
+   Rows were derived from the seats that referenced them, so a seatless row
+   simply vanished and a grid cinema had nowhere to put its screen — §4.3.2
+   mandated an `Element` for labelled space that grid mode gave that `Element`
+   nowhere to occupy. The row order of §4.2.1 is now explicit too: indexed rows
+   first ascending, then unindexed ones in declaration order, with `index`
+   treated as an ordering key rather than a position. Every declared row reaches
+   the render model as a `RenderRow`, carrying a new `empty` flag; keyboard
+   navigation steps over the empty ones rather than into them.
+
+2. **`Section.directions` (§4.10),** localized onto `RenderSection.directions`.
+   A purely informational label for what an addressing axis means physically —
+   "front of train" / "back of train", or compass points for open-air seating.
+   Never validated against, and never read to decide layout or screen placement.
+
+3. **The example corpus published with the standard is now a test.** All 42
+   documents from the spec repository are vendored under
+   `src/lib/kerusi/conformance/` and asserted file by file: the conformant ones
+   accepted, the semantically invalid ones rejected by rule id. Five
+   schema-invalid fixtures are accepted on purpose — one because §2 and §7
+   require a consumer to ignore unrecognized members, four because they fail a
+   producer-side shape constraint the published JSON Schemas own. That folder's
+   README says which is which.
 
 ### Changed
 
-1. **A selected seat is drawn from two tones instead of one.** `selectedBg` is
+1. **An element is now bound to its section's positioning mode, and its grid
+   spans must be positive integers (§4.4.1).** Rev 12 gave `Element.width` and
+   `height` normative units — column and row spans in cells, defaulting to 1 —
+   and bound an element to its section's mode as §4.5 already bound its seats.
+   Four rules enforce it, and all four are **errors** where the nearest previous
+   check was a warning:
+
+   | Rule                       | Rejects                                                       |
+   | -------------------------- | ------------------------------------------------------------- |
+   | `element-layout-mismatch`  | `x`/`y` on a grid element, `col` on a freeform one            |
+   | `element-span-invalid`     | a fractional or non-positive span on a grid-addressed element |
+   | `element-row-span-overrun` | a row span reaching past the section's last row               |
+   | `element-row-unresolved`   | an `Element.row` the section's `rows` does not declare (§4.6) |
+
+   `element-position-mode` is gone; it warned about the first of these and its
+   name did not survive the promotion. A document that only drew oddly before is
+   now rejected — most often a grid element positioned with a percentage `y`,
+   which should become a `row` anchored to an empty row. An element positioned
+   no way at all is still a warning: §4.4 does not require one to be placed.
+   Omitting `col` now spans the section's full column extent, per §4.4.1.
+
+2. **Timestamps must be RFC 3339 `date-time` (§5.1.1).** `KerusiState.updatedAt`,
+   `SeatStatus.holdExpires`, `KerusiStateDelta.updatedAt`,
+   `KerusiSession.startsAt` and `endsAt` are now format-checked, calendar
+   included, and a document failing the check is rejected —
+   `state-updatedat-format`, `seat-status-hold-expires-format`,
+   `session-startsat-format`, `session-endsat-format`.
+
+   Rev 13 narrowed the requirement from "ISO 8601", which admits forms a
+   consumer cannot reliably parse: seconds omitted, the basic format without
+   separators, ordinal and week dates, local times with no offset. A consumer
+   that cannot parse `holdExpires` cannot show a correct countdown. A document
+   whose timestamps were already `2026-08-17T09:14:00Z` is unaffected.
+
+3. **A selected seat is drawn from two tones instead of one.** `selectedBg` is
    now a frame around a `selectedFg` core, and the number, occupant figure and
    wheelchair marker are tinted `selectedBg` to read against that core.
 
@@ -46,11 +102,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
    `selectedFg` is most of a selected seat's area rather than just a label tint.
    `README.md` carries a CSS snippet that restores the flat pre-1.1 treatment.
 
-2. **`.kerusi-seat__ring` is now `.kerusi-seat__core`,** and it is filled rather
+4. **`.kerusi-seat__ring` is now `.kerusi-seat__core`,** and it is filled rather
    than stroked.
 
-3. **`seatRingStroke` is renamed `seatSelectedFrame`.** The old name is still
+5. **`seatRingStroke` is renamed `seatSelectedFrame`.** The old name is still
    exported and still resolves to the same function; it is deprecated.
+
+### Removed
+
+1. **The `headroomRows` input.** It reserved rows' worth of space above a grid
+   section's first row, and was never released. Rev 12 considered exactly this
+   field on the document side and rejected it — a renderer hint in a format §2
+   keeps renderer-agnostic, solving the top margin and leaving mid-section space
+   unrepresentable. Declare the rows instead: `{ id: 'throw' }` with no seats
+   reserves the same space, travels with the document, and works between two
+   rows as well as above the first.
 
 ## [1.0.0] - 2026-08-19
 

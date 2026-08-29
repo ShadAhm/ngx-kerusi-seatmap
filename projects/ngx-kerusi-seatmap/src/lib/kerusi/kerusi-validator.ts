@@ -1,5 +1,5 @@
 import { Element, KerusiMap, Seat, Section } from './kerusi-map.model';
-import { KerusiSession, KerusiState, KerusiStateDelta } from './kerusi-state.model';
+import { KerusiSession, KerusiState, KerusiStateDelta, SeatStatus } from './kerusi-state.model';
 import { resolveSeatPrice } from './kerusi-price';
 import {
   checkSectionLayout,
@@ -8,6 +8,7 @@ import {
   hasXY,
   resolveSectionLayoutMode,
 } from './kerusi-layout-mode';
+import { rowOrderIndexes } from './kerusi-rows';
 import { error, errorsOf, KerusiViolation, warning } from './kerusi-violation';
 
 export { errorsOf } from './kerusi-violation';
@@ -63,6 +64,8 @@ export function checkKerusiState(state: unknown): readonly KerusiViolation[] {
   const doc = state as KerusiState;
   if (doc && typeof doc === 'object' && (!doc.seats || typeof doc.seats !== 'object')) {
     violations.push(error('state-seats', 'KerusiState is missing the required "seats" object.'));
+  } else if (doc && typeof doc === 'object') {
+    violations.push(...collectSeatStatusViolations(doc.seats, 'seats'));
   }
   return violations;
 }
@@ -75,6 +78,33 @@ export function checkKerusiStateDelta(delta: unknown): readonly KerusiViolation[
     violations.push(
       error('delta-changes', 'KerusiStateDelta is missing the required "changes" object.'),
     );
+  } else if (doc && typeof doc === 'object') {
+    violations.push(...collectSeatStatusViolations(doc.changes, 'changes'));
+  }
+  return violations;
+}
+
+/**
+ * §5.1.1 applies to every timestamp in a document, `holdExpires` included: a
+ * consumer that cannot parse it cannot show a correct hold countdown, which is
+ * the one thing the field exists for.
+ */
+function collectSeatStatusViolations(
+  seats: Record<string, SeatStatus> | undefined,
+  member: 'seats' | 'changes',
+): KerusiViolation[] {
+  const violations: KerusiViolation[] = [];
+  for (const [seatId, status] of Object.entries(seats ?? {})) {
+    if (status?.holdExpires !== undefined && !isRfc3339(status.holdExpires)) {
+      violations.push(
+        error(
+          'seat-status-hold-expires-format',
+          `Seat "${seatId}" has "holdExpires": "${status.holdExpires}", which is not ` +
+            'an RFC 3339 date-time (§5.1.1).',
+          { id: seatId, path: `${member}.${seatId}` },
+        ),
+      );
+    }
   }
   return violations;
 }
@@ -103,7 +133,59 @@ export function checkKerusiSession(session: unknown): readonly KerusiViolation[]
       }),
     );
   }
+  for (const member of ['startsAt', 'endsAt'] as const) {
+    const value = doc[member];
+    if (value !== undefined && !isRfc3339(value)) {
+      violations.push(
+        error(
+          `session-${member.toLowerCase()}-format`,
+          `KerusiSession "${member}" is "${value}", which is not an RFC 3339 ` +
+            'date-time (§5.1.1).',
+          { id: doc.id },
+        ),
+      );
+    }
+  }
   return violations;
+}
+
+/**
+ * An RFC 3339 `date-time` (§5.1.1) — the profile `format: "date-time"` has
+ * always meant in the published JSON Schemas.
+ *
+ * "ISO 8601", which the spec said before rev 13, admits forms a consumer cannot
+ * reliably parse: seconds omitted, the basic format without separators, ordinal
+ * and week dates, and local times carrying no offset at all. The regex fixes
+ * the shape; the calendar check then rejects a date the shape allows but the
+ * calendar does not, such as a 31st of February. `Date.parse` cannot stand in
+ * for that — it rolls such a date silently into the next month.
+ */
+const RFC_3339 =
+  /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:[Zz]|[+-](\d{2}):(\d{2}))$/;
+
+function isRfc3339(value: string): boolean {
+  const match = RFC_3339.exec(value);
+  if (!match) {
+    return false;
+  }
+
+  const [year, month, day, hour, minute, second, offsetHour, offsetMinute] = match
+    .slice(1)
+    .map((part) => Number(part ?? 0));
+
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) {
+    return false;
+  }
+  // A second of 60 is a leap second, which RFC 3339 permits.
+  if (hour > 23 || minute > 59 || second > 60) {
+    return false;
+  }
+  return offsetHour <= 23 && offsetMinute <= 59;
+}
+
+function daysInMonth(year: number, month: number): number {
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  return [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
 }
 
 /**
@@ -178,7 +260,9 @@ export function validateDocumentSet(docs: {
  *    `rows`; opaque free-text otherwise (§4.6).
  *  - Every `Seat.companions[]` entry resolves to another seat in the SAME
  *    section, and the relationship is symmetric (§4.6).
- *  - Every `Element` has the required `id` and `kind` (§4.4).
+ *  - Every `Element` has the required `id` and `kind` (§4.4), is positioned in
+ *    its section's own layout mode, and — in a grid section — carries integer
+ *    column and row spans that stay inside the section's rows (§4.4.1, §4.6).
  *  - All resolved currencies across the map are identical (§4.9).
  *
  * Advisory findings never throw; use {@link checkKerusiMap} to see them.
@@ -189,7 +273,8 @@ export function validateKerusiMap(map: KerusiMap): KerusiMap {
 }
 
 /**
- * Validates a {@link KerusiState} against the MUST-level rules of spec §5.1:
+ * Validates a {@link KerusiState} against the MUST-level rules of spec §5.1,
+ * including the RFC 3339 timestamp profile of §5.1.1:
  * `kerusi` present and supported, `updatedAt` present, exactly one of
  * `sessionId`/`mapId`, and a `seats` object.
  */
@@ -476,6 +561,8 @@ function collectSectionViolations(
 function collectElementViolations(section: Section, path: string): KerusiViolation[] {
   const violations: KerusiViolation[] = [];
   const mode = resolveSectionLayoutMode(section);
+  const rowIndexes = rowOrderIndexes(section);
+  const declaresRows = Boolean(section.rows);
   const seen = new Set<string>();
 
   (section.elements ?? []).forEach((element: Element, i) => {
@@ -510,7 +597,20 @@ function collectElementViolations(section: Section, path: string): KerusiViolati
       );
     }
 
-    const usesGrid = element.col !== undefined && element.col !== null;
+    // §4.6: an element's row resolves against the registry exactly as a seat's
+    // does, and for the same reason — a row that does not exist places nothing.
+    if (declaresRows && element.row !== undefined && !rowIndexes.has(element.row)) {
+      violations.push(
+        error(
+          'element-row-unresolved',
+          `Element "${element.id}" references unknown row "${element.row}" in ` +
+            `section "${section.id}" rows (§4.6).`,
+          { id: element.id, path: elementPath },
+        ),
+      );
+    }
+
+    const usesGrid = hasCol(element) || element.row !== undefined;
     const usesFreeform = hasAnyCoordinate(element);
 
     if (!usesGrid && !usesFreeform) {
@@ -525,28 +625,96 @@ function collectElementViolations(section: Section, path: string): KerusiViolati
       return;
     }
 
-    // Elements are not bound by §4.5 the way seats are, but an element
-    // addressed in the other mode from its section still renders oddly.
-    if (mode === 'grid' && usesFreeform && !usesGrid) {
+    // §4.4.1 binds an element to its section's positioning mode exactly as §4.5
+    // binds its seats: a section whose elements are addressed differently from
+    // its seats cannot be laid out deterministically by two renderers. `mixed`
+    // permits either, and a freeform element may still carry `row` as a label.
+    if (mode === 'grid' && usesFreeform) {
       violations.push(
-        warning(
-          'element-position-mode',
-          `Element "${element.id}" uses "x"/"y" in grid section "${section.id}"; it ` +
-            'will be placed by percentage of the section canvas instead of by cell.',
+        error(
+          'element-layout-mismatch',
+          `Element "${element.id}" carries "x"/"y" in grid section "${section.id}"; ` +
+            'a grid element is positioned by "row" and/or "col" (§4.4.1).',
           { id: element.id, path: elementPath },
         ),
       );
-    } else if (mode === 'freeform' && usesGrid && !usesFreeform) {
+    } else if (mode === 'freeform' && hasCol(element)) {
       violations.push(
-        warning(
-          'element-position-mode',
-          `Element "${element.id}" uses "row"/"col" in freeform section ` +
-            `"${section.id}", which has no column grid to place it in.`,
+        error(
+          'element-layout-mismatch',
+          `Element "${element.id}" carries "col" in freeform section ` +
+            `"${section.id}", which has no column grid to place it in (§4.4.1).`,
           { id: element.id, path: elementPath },
         ),
       );
     }
+
+    violations.push(
+      ...collectElementSpanViolations(element, section, mode, rowIndexes, elementPath),
+    );
   });
+
+  return violations;
+}
+
+/**
+ * §4.4.1 spans. For a grid-addressed element `width` and `height` are
+ * dimensionless cell counts — positive integers, defaulting to 1 — so a
+ * fractional or zero span leaves two renderers to disagree about how much space
+ * it occupies. They are percentages once `x`/`y` governs placement, where any
+ * positive number is meaningful, so nothing is checked there. A mixed section
+ * can hold both kinds, one element at a time.
+ *
+ * A row span is also bounded, and only in a grid section as §4.6 scopes it: an
+ * element reaching past the last row in the §4.2.1 order occupies rows that do
+ * not exist.
+ */
+function collectElementSpanViolations(
+  element: Element,
+  section: Section,
+  mode: ReturnType<typeof resolveSectionLayoutMode>,
+  rowIndexes: Map<string, number>,
+  elementPath: string,
+): KerusiViolation[] {
+  const gridAddressed = mode === 'grid' || (mode === 'mixed' && !hasAnyCoordinate(element));
+  if (!gridAddressed) {
+    return [];
+  }
+
+  const violations: KerusiViolation[] = [];
+
+  for (const [axis, span] of [
+    ['width', element.width],
+    ['height', element.height],
+  ] as const) {
+    if (span !== undefined && (!Number.isInteger(span) || span < 1)) {
+      violations.push(
+        error(
+          'element-span-invalid',
+          `Element "${element.id}" has "${axis}": ${span} in grid section ` +
+            `"${section.id}"; a grid span is a positive integer count of cells (§4.4.1).`,
+          { id: element.id, path: elementPath },
+        ),
+      );
+    }
+  }
+
+  const start =
+    mode === 'grid' && element.row !== undefined ? rowIndexes.get(element.row) : undefined;
+  const span = element.height ?? 1;
+  if (start !== undefined && Number.isInteger(span) && span >= 1) {
+    const last = start + span - 1;
+    if (last > rowIndexes.size - 1) {
+      violations.push(
+        error(
+          'element-row-span-overrun',
+          `Element "${element.id}" spans ${span} rows from "${element.row}", ` +
+            `reaching past the last row of section "${section.id}" (§4.2.1, §4.6).`,
+          { id: element.id, path: elementPath },
+        ),
+      );
+    }
+  }
 
   return violations;
 }
@@ -572,6 +740,14 @@ function collectStateEnvelope(
   if (!doc.updatedAt) {
     violations.push(
       error('state-updatedat', `${typeName} is missing the required "updatedAt" timestamp.`),
+    );
+  } else if (!isRfc3339(doc.updatedAt)) {
+    violations.push(
+      error(
+        'state-updatedat-format',
+        `${typeName} "updatedAt" is "${doc.updatedAt}", which is not an RFC 3339 ` +
+          'date-time (§5.1.1).',
+      ),
     );
   }
 

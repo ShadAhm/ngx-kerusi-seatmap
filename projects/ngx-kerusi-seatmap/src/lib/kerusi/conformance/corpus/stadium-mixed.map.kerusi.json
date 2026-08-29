@@ -1,0 +1,107 @@
+{
+  "kerusi": "1.0",
+  "id": "court1-2026",
+  "name": "Court 1",
+  "domain": "stadium",
+  "locale": "en",
+  "legend": [
+    {
+      "id": "standard",
+      "label": {
+        "en": "Standard",
+        "ms": "Biasa"
+      },
+      "color": "#3366cc"
+    }
+  ],
+  "sections": [
+    {
+      "id": "east-stand",
+      "label": {
+        "en": "East Stand",
+        "ms": "Pentas Timur"
+      },
+      "index": 0,
+      "layout": "mixed",
+      "aspectRatio": "16:9",
+      "rows": [
+        {
+          "id": "A",
+          "label": "A",
+          "index": 0
+        },
+        {
+          "id": "walkway",
+          "index": 1
+        },
+        {
+          "id": "B",
+          "label": "B",
+          "index": 2
+        }
+      ],
+      "directions": [
+        {
+          "axis": "x",
+          "low": "west",
+          "high": "east"
+        },
+        {
+          "axis": "y",
+          "low": {
+            "en": "south"
+          },
+          "high": {
+            "en": "north"
+          }
+        }
+      ],
+      "elements": [
+        {
+          "id": "stairs-1",
+          "kind": "gap",
+          "label": "STAIRS",
+          "row": "walkway",
+          "col": 3
+        },
+        {
+          "id": "exit-e",
+          "kind": "exit",
+          "label": "Exit",
+          "x": 95,
+          "y": 50
+        }
+      ],
+      "seats": [
+        {
+          "id": "E-A1",
+          "label": "1",
+          "row": "A",
+          "col": 1,
+          "x": 10,
+          "y": 50,
+          "type": "standard"
+        },
+        {
+          "id": "E-A2",
+          "label": "2",
+          "row": "A",
+          "col": 2,
+          "x": 16,
+          "y": 49,
+          "rotation": -4,
+          "type": "standard"
+        },
+        {
+          "id": "E-B1",
+          "label": "1",
+          "row": "B",
+          "col": 1,
+          "x": 10,
+          "y": 62,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

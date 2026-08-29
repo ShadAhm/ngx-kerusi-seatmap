@@ -1,0 +1,31 @@
+{
+  "kerusi": "1.0",
+  "id": "grid-element-with-xy",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "layout": "grid",
+      "elements": [
+        {
+          "id": "screen",
+          "kind": "screen",
+          "x": 50,
+          "y": 2
+        }
+      ],
+      "seats": [
+        {
+          "id": "a",
+          "row": "A",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

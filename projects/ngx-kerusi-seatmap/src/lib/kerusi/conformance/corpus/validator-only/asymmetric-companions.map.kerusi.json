@@ -1,0 +1,29 @@
+{
+  "kerusi": "1.0",
+  "id": "asymmetric-companions",
+  "legend": [
+    {
+      "id": "couple"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "L1",
+          "col": 1,
+          "type": "couple",
+          "companions": [
+            "L2"
+          ]
+        },
+        {
+          "id": "L2",
+          "col": 2,
+          "type": "couple"
+        }
+      ]
+    }
+  ]
+}

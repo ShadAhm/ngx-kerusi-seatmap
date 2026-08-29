@@ -3,7 +3,9 @@ import { KerusiState } from '../kerusi/kerusi-state.model';
 import { resolveSectionLayoutMode, SectionLayoutMode } from '../kerusi/kerusi-layout-mode';
 import { resolveLocalizedText, resolveMapLocale } from '../kerusi/kerusi-locale';
 import { resolveSeatPrice, resolveTierPrice } from '../kerusi/kerusi-price';
+import { orderRowMeta } from '../kerusi/kerusi-rows';
 import {
+  RenderDirection,
   RenderElement,
   RenderLegendEntry,
   RenderMap,
@@ -37,8 +39,9 @@ export interface BuildRenderModelOptions {
  *  - sections ordered by `Section.index`, and each given its own layout mode
  *    per §4.5 — this is what lets a grid balcony and a freeform orchestra
  *    coexist in one map;
- *  - seats grouped into rows by `Seat.row`, with rows ordered by `RowMeta.index`
- *    and seats ordered by `col` (grid, mixed) or `x` (freeform);
+ *  - every row a section declares materialized, empty rows included, in the
+ *    §4.2.1 order, with seats grouped into them by `Seat.row` and ordered by
+ *    `col` (grid, mixed) or `x` (freeform);
  *  - availability merged by `Seat.id`, honoring §5.1's sparse rule that an
  *    absent seat is available;
  *  - price resolved through the §4.9 precedence order;
@@ -123,18 +126,44 @@ function buildSection(section: Section, ctx: BuildContext): RenderSection {
     rows,
     seats: rows.flatMap((r) => r.seats),
     elements: buildElements(section, rows),
+    directions: buildDirections(section, ctx.locale),
     source: section,
   };
 }
 
 /**
- * Groups a section's flat seat list into rows and orders both.
+ * Localizes `Section.directions` (§4.10) and carries it through. Both ends of a
+ * `Direction` may be a locale map, exactly as `Section.label` may be.
  *
- * `Section.rows` is metadata, not a container (§4.2) — a seat's `row` may name a
- * `RowMeta` or be free text with no declaration at all, and both must work.
- * Rows are ordered by `RowMeta.index` where one exists, otherwise by first
- * appearance, which keeps a document that declares no row metadata rendering in
- * the order its author wrote it.
+ * Nothing downstream reads this — §4.10 forbids a renderer deciding layout or
+ * screen placement from it. It exists so an application can print "front of
+ * train" beside the axis the document says means that.
+ */
+function buildDirections(section: Section, locale: string): RenderDirection[] | undefined {
+  if (!section.directions?.length) {
+    return undefined;
+  }
+  return section.directions.map((direction) => ({
+    axis: direction.axis,
+    low: resolveLocalizedText(direction.low, locale) ?? '',
+    high: resolveLocalizedText(direction.high, locale) ?? '',
+  }));
+}
+
+/**
+ * Materializes a section's rows and groups its flat seat list into them.
+ *
+ * `Section.rows` is not a container (§4.2) — seats never live inside a row — but
+ * where it is present it *is* the section's complete row registry (§4.2.2), so
+ * the rows come from it rather than from the seats that happen to reference
+ * one. That is what makes an **empty row** real: a `RowMeta` no seat mentions
+ * still takes a slot, and the grid layout reserves a row of vertical space for
+ * it. Without that, a document could not open the throw between a cinema screen
+ * and row A, because rows would exist only where seats did.
+ *
+ * With no registry, a seat's `row` is opaque free text (§4.6) and the rows are
+ * exactly those the seats name, in first-appearance order — a document that
+ * declares no row metadata still renders in the order its author wrote it.
  */
 function buildRows(
   section: Section,
@@ -153,24 +182,36 @@ function buildRows(
     byRowKey.get(key)!.push(seat);
   });
 
-  const metaById = new Map((section.rows ?? []).map((r: RowMeta) => [r.id, r]));
+  const registry = section.rows;
+  const ordered: { key: string; meta?: RowMeta }[] = registry
+    ? orderRowMeta(registry).map((meta) => ({ key: meta.id, meta }))
+    : [...byRowKey.keys()]
+        .sort((a, b) => firstSeen.get(a)! - firstSeen.get(b)!)
+        .map((key) => ({ key }));
 
-  const ordered = [...byRowKey.entries()]
-    .map(([key, seats]) => ({ key, seats, meta: metaById.get(key) }))
-    .sort(
-      (a, b) =>
-        orderKey(a.meta?.index, firstSeen.get(a.key)!) -
-        orderKey(b.meta?.index, firstSeen.get(b.key)!),
-    );
+  if (registry) {
+    // A seat naming a row the registry does not declare is a §4.6 violation the
+    // validator reports. Render it anyway, after the declared rows — dropping
+    // seats would hide the error rather than show it.
+    const declared = new Set(registry.map((r: RowMeta) => r.id));
+    for (const key of byRowKey.keys()) {
+      if (!declared.has(key)) {
+        ordered.push({ key });
+      }
+    }
+  }
 
-  return ordered.map(({ key, seats, meta }, rowIndex) => {
+  return ordered.map(({ key, meta }, rowIndex) => {
+    const seats = byRowKey.get(key) ?? [];
+    const label = meta?.label ?? (key || undefined);
     const row: RenderRow = {
       id: key,
-      label: meta?.label ?? (key || undefined),
+      label,
       index: rowIndex,
       seats: sortSeats(seats, layoutMode).map((seat) =>
-        buildSeat(seat, section, { rowIndex, rowLabel: meta?.label ?? (key || undefined) }, ctx),
+        buildSeat(seat, section, { rowIndex, rowLabel: label }, ctx),
       ),
+      empty: seats.length === 0,
     };
     return row;
   });

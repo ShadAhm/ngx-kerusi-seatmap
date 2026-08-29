@@ -1,0 +1,119 @@
+{
+  "kerusi": "1.0",
+  "id": "cinema3-hallA",
+  "name": "Hall A",
+  "domain": "cinema",
+  "legend": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "defaultPriceTier": "regular"
+    },
+    {
+      "id": "recliner-couple",
+      "label": "Couple Recliner",
+      "defaultPriceTier": "premium"
+    }
+  ],
+  "priceTiers": [
+    {
+      "id": "regular",
+      "price": {
+        "amount": 1500,
+        "currency": "MYR"
+      }
+    },
+    {
+      "id": "premium",
+      "price": {
+        "amount": 4500,
+        "currency": "MYR"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "main",
+      "layout": "freeform",
+      "rows": [
+        {
+          "id": "A",
+          "label": "A",
+          "index": 0
+        },
+        {
+          "id": "L",
+          "label": "L (Love Seats)",
+          "index": 11
+        }
+      ],
+      "elements": [
+        {
+          "id": "screen",
+          "kind": "screen",
+          "label": "Screen",
+          "x": 50,
+          "y": 2,
+          "width": 80,
+          "height": 3
+        }
+      ],
+      "seats": [
+        {
+          "id": "A1",
+          "label": "1",
+          "row": "A",
+          "x": 20,
+          "y": 20,
+          "rotation": -5,
+          "type": "standard"
+        },
+        {
+          "id": "A2",
+          "label": "2",
+          "row": "A",
+          "x": 26,
+          "y": 19,
+          "rotation": -3,
+          "type": "standard"
+        },
+        {
+          "id": "A3",
+          "label": "3",
+          "row": "A",
+          "x": 32,
+          "y": 19,
+          "rotation": -3,
+          "type": "standard",
+          "accessibility": {
+            "wheelchairAccessible": true,
+            "transferArmrest": "left",
+            "aisleChairCompatible": true
+          }
+        },
+        {
+          "id": "L1",
+          "label": "1",
+          "row": "L",
+          "x": 60,
+          "y": 70,
+          "type": "recliner-couple",
+          "companions": [
+            "L2"
+          ]
+        },
+        {
+          "id": "L2",
+          "label": "2",
+          "row": "L",
+          "x": 66,
+          "y": 70,
+          "type": "recliner-couple",
+          "companions": [
+            "L1"
+          ]
+        }
+      ]
+    }
+  ]
+}

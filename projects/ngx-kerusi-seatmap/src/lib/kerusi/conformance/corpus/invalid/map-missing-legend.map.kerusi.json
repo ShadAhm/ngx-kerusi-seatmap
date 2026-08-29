@@ -1,0 +1,16 @@
+{
+  "kerusi": "1.0",
+  "id": "no-legend",
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

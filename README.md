@@ -77,23 +77,24 @@ and [docs/kerusi.md](docs/kerusi.md) for a tour of what the format can express.
 The library is a conformant Kerusi consumer. [docs/kerusi-conformance.md](docs/kerusi-conformance.md)
 is a feature-by-feature audit; the highlights:
 
-|                                     |                                                                                                                                                             |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **All three positioning modes**     | `grid`, `freeform` (percentage coordinates and per-seat rotation) and `mixed`, validated strictly per §4.5 and inferred when a section omits `layout`.      |
-| **Sections as render units**        | Each `Section` is its own `<svg>` with its own layout mode, aspect ratio and heading — a freeform orchestra and a grid balcony coexist in one map.          |
-| **The document drives the picture** | `SeatType.color`, price tiers, attributes and `Element.kind` all affect what is drawn.                                                                      |
-| **Accessibility**                   | Roving tabindex, arrow keys that follow the §4.3.1 `col` order, and seats announced with their type, price, status and every §4.3.4 accessibility property. |
-| **Companions**                      | `companions` closures book and release together, and a pair whose other half is sold is refused rather than half-taken.                                     |
-| **Live availability**               | `KerusiStateStore` applies deltas in order, discards stale and out-of-scope ones, and reverts lapsed holds.                                                 |
-| **Validation**                      | Every MUST-level rule, throwing or collecting, with a rule slug and document path per violation.                                                            |
+|                                       |                                                                                                                                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **All three positioning modes**       | `grid`, `freeform` (percentage coordinates and per-seat rotation) and `mixed`, validated strictly per §4.5 and inferred when a section omits `layout`.                                     |
+| **Sections as render units**          | Each `Section` is its own `<svg>` with its own layout mode, aspect ratio and heading — a freeform orchestra and a grid balcony coexist in one map.                                         |
+| **The document drives the picture**   | `SeatType.color`, price tiers, attributes and `Element.kind` all affect what is drawn.                                                                                                     |
+| **Space is declared, not configured** | An empty row (§4.2.2) reserves the throw in front of a cinema screen or a cross-aisle mid-section, so the same document produces the same vertical arrangement in any conformant renderer. |
+| **Accessibility**                     | Roving tabindex, arrow keys that follow the §4.3.1 `col` order, and seats announced with their type, price, status and every §4.3.4 accessibility property.                                |
+| **Companions**                        | `companions` closures book and release together, and a pair whose other half is sold is refused rather than half-taken.                                                                    |
+| **Live availability**                 | `KerusiStateStore` applies deltas in order, discards stale and out-of-scope ones, and reverts lapsed holds.                                                                                |
+| **Validation**                        | Every MUST-level rule, throwing or collecting, with a rule slug and document path per violation — asserted against the example corpus published with the standard.                         |
 
 ## Repository layout
 
-| Path                            | What it is                          |
-| -------------------------------- | ------------------------------------ |
-| `projects/ngx-kerusi-seatmap/`  | The publishable library.            |
-| `projects/demo/`                | Demo app, deployed to GitHub Pages. |
-| `docs/`                         | Format guide and the conformance report. |
+| Path                           | What it is                               |
+| ------------------------------ | ---------------------------------------- |
+| `projects/ngx-kerusi-seatmap/` | The publishable library.                 |
+| `projects/demo/`               | Demo app, deployed to GitHub Pages.      |
+| `docs/`                        | Format guide and the conformance report. |
 
 ## Develop
 

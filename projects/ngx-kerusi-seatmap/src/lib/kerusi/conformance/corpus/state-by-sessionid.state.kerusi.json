@@ -1,0 +1,10 @@
+{
+  "kerusi": "1.0",
+  "sessionId": "MH123-2026-08-17",
+  "updatedAt": "2026-08-17T09:14:00Z",
+  "seats": {
+    "1A": {
+      "status": "booked"
+    }
+  }
+}

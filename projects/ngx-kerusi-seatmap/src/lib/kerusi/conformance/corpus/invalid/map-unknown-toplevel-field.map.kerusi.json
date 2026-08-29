@@ -1,0 +1,22 @@
+{
+  "kerusi": "1.0",
+  "id": "unknown-field",
+  "vendorTag": "should-live-under-metadata",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

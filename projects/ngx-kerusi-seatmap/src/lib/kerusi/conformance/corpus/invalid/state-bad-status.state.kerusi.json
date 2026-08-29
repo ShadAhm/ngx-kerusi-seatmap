@@ -1,0 +1,10 @@
+{
+  "kerusi": "1.0",
+  "mapId": "cinema3-hallA",
+  "updatedAt": "2026-08-17T09:14:00Z",
+  "seats": {
+    "A1": {
+      "status": "reserved"
+    }
+  }
+}

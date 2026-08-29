@@ -119,11 +119,6 @@ export class KerusiSeatmapComponent {
   readonly seatSize = input<number>(28);
   /** Gap between grid cells, in viewBox units. */
   readonly seatGap = input<number>(6);
-  /**
-   * Empty rows' worth of space above the first row of a grid section, for a
-   * screen or stage to occupy. In row pitches, so it tracks `seatSize`.
-   */
-  readonly headroomRows = input<number>(0);
   /** Freeform viewBox width; height follows the section's aspect ratio. */
   readonly freeformBasis = input<number>(1000);
   /**
@@ -289,7 +284,6 @@ export class KerusiSeatmapComponent {
           computeSectionLayout(section, {
             seatSize: override.seatSize ?? this.seatSize(),
             seatGap: this.seatGap(),
-            headroomRows: this.headroomRows(),
             freeformBasis: this.freeformBasis(),
             aspectRatio: override.aspectRatio,
             rtl: this.isRtl(),

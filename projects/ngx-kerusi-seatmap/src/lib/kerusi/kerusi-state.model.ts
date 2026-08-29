@@ -8,7 +8,7 @@
 export interface SeatStatus {
   /** REQUIRED. */
   status: 'available' | 'held' | 'booked' | 'blocked';
-  /** ISO 8601. Meaningful only when `status === "held"`. */
+  /** RFC 3339 date-time (§5.1.1). Meaningful only when `status === "held"`. */
   holdExpires?: string;
   metadata?: Record<string, unknown>;
 }
@@ -31,7 +31,7 @@ export interface KerusiState {
    * concept. Exactly one of `sessionId`/`mapId` MUST be present.
    */
   mapId?: string;
-  /** REQUIRED. ISO 8601 timestamp. */
+  /** REQUIRED. RFC 3339 date-time (§5.1.1). */
   updatedAt: string;
   /** REQUIRED. Keyed by `Seat.id`. Only non-default entries need be included. */
   seats: Record<string, SeatStatus>;
@@ -49,8 +49,8 @@ export interface KerusiStateDelta {
   sessionId?: string;
   mapId?: string;
   /**
-   * REQUIRED. ISO 8601, strictly increasing per session/map so a consumer can
-   * detect and discard an out-of-order delta.
+   * REQUIRED. RFC 3339 date-time (§5.1.1), strictly increasing per session/map
+   * so a consumer can detect and discard an out-of-order delta.
    */
   updatedAt: string;
   /**
@@ -75,7 +75,7 @@ export interface KerusiSession {
   mapId: string;
   /** e.g. "Dune: Part Three — 7:30pm", "MH123, 17 Aug 2026". */
   label?: string;
-  /** ISO 8601 — showtime / departure / event start. */
+  /** RFC 3339 date-time (§5.1.1) — showtime / departure / event start. */
   startsAt?: string;
   endsAt?: string;
   metadata?: Record<string, unknown>;
