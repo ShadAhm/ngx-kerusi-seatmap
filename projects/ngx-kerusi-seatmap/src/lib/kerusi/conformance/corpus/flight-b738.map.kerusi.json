@@ -1,0 +1,113 @@
+{
+  "kerusi": "1.0",
+  "id": "b738-2class-v1",
+  "name": "Boeing 737-800, 2-class",
+  "domain": "flight",
+  "legend": [
+    {
+      "id": "economy",
+      "label": "Economy",
+      "defaultPriceTier": "eco"
+    },
+    {
+      "id": "business",
+      "label": "Business",
+      "defaultPriceTier": "biz"
+    }
+  ],
+  "priceTiers": [
+    {
+      "id": "eco",
+      "price": {
+        "amount": 0,
+        "currency": "MYR"
+      }
+    },
+    {
+      "id": "biz",
+      "price": {
+        "amount": 0,
+        "currency": "MYR"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "business",
+      "label": "Business",
+      "seats": [
+        {
+          "id": "1A",
+          "row": "1",
+          "col": 1,
+          "type": "business",
+          "attributes": [
+            "window"
+          ]
+        },
+        {
+          "id": "1C",
+          "row": "1",
+          "col": 2,
+          "type": "business",
+          "attributes": [
+            "aisle"
+          ]
+        },
+        {
+          "id": "1D",
+          "row": "1",
+          "col": 4,
+          "type": "business",
+          "attributes": [
+            "aisle"
+          ]
+        },
+        {
+          "id": "1F",
+          "row": "1",
+          "col": 5,
+          "type": "business",
+          "attributes": [
+            "window"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "economy",
+      "label": "Economy",
+      "seats": [
+        {
+          "id": "12A",
+          "row": "12",
+          "col": 1,
+          "type": "economy",
+          "attributes": [
+            "window",
+            "exit-row"
+          ]
+        },
+        {
+          "id": "12B",
+          "row": "12",
+          "col": 2,
+          "type": "economy",
+          "attributes": [
+            "exit-row"
+          ]
+        },
+        {
+          "id": "12C",
+          "row": "12",
+          "col": 3,
+          "type": "economy",
+          "attributes": [
+            "aisle",
+            "exit-row"
+          ]
+        }
+      ]
+    }
+  ]
+}

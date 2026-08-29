@@ -3,9 +3,8 @@
     <h1>ngx-kerusi-seatmap</h1>
     <p>
       An Angular seat map that renders
-      <a href="https://github.com/ShadAhm/kerusi">Kerusi</a> documents directly — every
-      positioning mode, sections as real render units, and a keyboard-navigable,
-      screen-reader-friendly SVG.
+      <a href="https://github.com/ShadAhm/kerusi">Kerusi</a> documents directly — every positioning
+      mode, sections as real render units, and a keyboard-navigable, screen-reader-friendly SVG.
     </p>
   </div>
 
@@ -79,7 +78,6 @@
           (selectionChange)="onSelectionChange($event)"
           [locale]="locale()"
           [seatSize]="scenario().seatSize ?? 28"
-          [headroomRows]="scenario().headroomRows ?? 0"
           [typeColors]="typeColors()"
           [showLegend]="showLegend()"
           (seatDisallowed)="onDisallowed($event)"

@@ -65,18 +65,50 @@ export interface SeatType {
 }
 
 /**
- * Purely descriptive row metadata (labels, display order). NOT a container —
- * seats reference a row by id via `Seat.row` rather than nesting inside it
- * (§4.2). Entirely OPTIONAL; a seat MAY carry a free-text `row` with no
- * corresponding `RowMeta`.
+ * A row's declaration: label, ordering key, row-level metadata. NOT a container
+ * — seats reference a row by id via `Seat.row` rather than nesting inside it
+ * (§4.2).
+ *
+ * `Section.rows` as a whole is OPTIONAL, but where it is present it is the
+ * section's **complete, ordered row registry** rather than an annotation on the
+ * rows the seats happen to mention: §4.6 requires every `Seat.row` to resolve
+ * against it, so no seat can occupy a row it does not declare. A `RowMeta` that
+ * no seat references is an *empty row* — see §4.2.2 and {@link Section.rows}.
  */
 export interface RowMeta {
   /** REQUIRED. */
   id: string;
   label?: string;
-  /** Display order among rows in the section. */
+  /**
+   * Ordering key among the section's rows (§4.2.1) — a key, not a position.
+   * Rows at 0 and 11 with nothing between them are adjacent, two rows and not
+   * twelve; vertical space is reserved by declaring a row, never by leaving a
+   * numeric hole here.
+   */
   index?: number;
   metadata?: Record<string, unknown>;
+}
+
+/**
+ * A human-facing label for one of a section's four addressing axes (§4.10) —
+ * "front of train" / "back of train" for a carriage, compass points for
+ * open-air seating whose orientation decides where the sun falls.
+ *
+ * Non-normative and purely informational: a validator MUST NOT reject a
+ * document over it, and a renderer MUST NOT read it to decide layout or screen
+ * placement. It says what an axis *means* in the physical world, not which edge
+ * of the screen it is drawn on — that stays a rendering decision (§2).
+ */
+export interface Direction {
+  /** REQUIRED. Which addressing axis (§4.3) this label pair describes. */
+  axis: 'row' | 'col' | 'x' | 'y';
+  /**
+   * REQUIRED. The low end: ascending row order (§4.2.1) or `col` from the
+   * section's first, or `x`/`y` = 0.
+   */
+  low: LocalizedText;
+  /** REQUIRED. The high end: descending row/col order, or `x`/`y` = 100. */
+  high: LocalizedText;
 }
 
 /**
@@ -118,8 +150,12 @@ export interface Seat {
 
 /**
  * A non-bookable feature that still requires rendering: screens, stages,
- * exits, lavatories, staircases, or a labelled gap (§4.4). Positioned the same
- * way a seat is — `row`+`col` or `x`/`y`.
+ * exits, lavatories, staircases, or a labelled gap (§4.4).
+ *
+ * An element is bound to its section's positioning mode exactly as its seats
+ * are (§4.4.1), for the same reason §4.5 binds the seats: a section whose
+ * elements may be addressed differently from its seats cannot be laid out
+ * deterministically by two independent renderers.
  */
 export interface Element {
   /** REQUIRED. */
@@ -127,11 +163,27 @@ export interface Element {
   /** REQUIRED. "screen" | "stage" | "exit" | "lavatory" | "gap" | "aisle" | ... */
   kind: string;
   label?: string;
+  /** References `RowMeta.id` when the section declares `rows` (§4.6). */
   row?: string;
+  /** Grid column. MUST NOT appear in a freeform section (§4.4.1). */
   col?: number;
+  /** Percent of section width. MUST NOT appear in a grid section (§4.4.1). */
   x?: number;
+  /** Percent of section height. MUST NOT appear in a grid section (§4.4.1). */
   y?: number;
+  /**
+   * Grid: a **column span** in cells — a positive integer, default 1. Omitting
+   * `col` spans the section's full column extent and ignores `width`, which is
+   * the usual form for a screen or a stage.
+   * Freeform: a percentage of the section's width (§4.4.1).
+   */
   width?: number;
+  /**
+   * Grid: a **row span** in cells — a positive integer, default 1, counted from
+   * this element's `row` through the section's row order (§4.2.1). The rows it
+   * reaches are ordinarily empty rows declared for the purpose (§4.2.2).
+   * Freeform: a percentage of the section's height (§4.4.1).
+   */
   height?: number;
   rotation?: number;
   metadata?: Record<string, unknown>;
@@ -168,8 +220,22 @@ export interface Section {
    * Default: "1:1".
    */
   aspectRatio?: string;
-  /** Optional row metadata (labels, order). NOT a container. */
+  /**
+   * The section's row registry, when present: a complete, ordered list of its
+   * rows, not merely an annotation on the ones its seats mention (§4.2).
+   * Omitted, a seat's `row` is opaque free text and the section's rows are
+   * exactly those its seats reference.
+   *
+   * Rows are ordered by §4.2.1 — those declaring `index` first, ascending, then
+   * the rest in declaration order. A row no seat references is an **empty row**
+   * (§4.2.2): it still occupies a slot, reserving the vertical space one row of
+   * seats would. That is how a grid section expresses the throw between a
+   * cinema screen and its front row, or a cross-aisle between two rows — the
+   * row-axis counterpart to a skipped column (§4.3.2).
+   */
   rows?: RowMeta[];
+  /** Human-facing labels for this section's addressing axes (§4.10). */
+  directions?: Direction[];
   /** REQUIRED. Flat list; order is not significant. */
   seats: Seat[];
   /** Non-bookable features: screens, stages, aisles, stairs. */

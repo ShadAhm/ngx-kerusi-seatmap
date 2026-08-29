@@ -1,0 +1,23 @@
+{
+  "kerusi": "1.0",
+  "id": "mixed-seat-missing-xy",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "layout": "mixed",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "x": 10,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

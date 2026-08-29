@@ -1,0 +1,22 @@
+{
+  "kerusi": "1.0",
+  "id": "dangling-seat-type",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "row": "A",
+          "col": 1,
+          "type": "recliner"
+        }
+      ]
+    }
+  ]
+}

@@ -114,9 +114,11 @@ describe('grid-addressed elements', () => {
     Math.max(...seats.map((s) => s.x + s.width));
   const lav = (layout: { elements: readonly { x: number; width: number }[] }) => layout.elements[0];
 
-  it('places an element carrying a percentage y against the canvas, not a row', () => {
-    // The cinema screen's own case: no `row`, so `y` reads as a percentage of
-    // the section canvas and the element floats free of the row lattice.
+  it('still places an element that violates §4.4.1, rather than dropping it', () => {
+    // `y` in a grid section is an `element-layout-mismatch` and a fractional
+    // span an `element-span-invalid` — both rejected by the validator. The
+    // renderer is deliberately more forgiving than the validator: an
+    // unvalidated document draws something rather than losing its screen.
     const withScreen = mapWith({
       id: 'house',
       layout: 'grid',
@@ -126,54 +128,137 @@ describe('grid-addressed elements', () => {
 
     const layout = placed(withScreen, { seatSize: 20, seatGap: 10 });
     const [screen] = layout.elements;
-    // Height is still a row span, and y centers the box at 50% of the canvas.
-    expect(screen.height).toBe(0.5 * 30 - 10);
+    // The fractional span rounds up to the one cell §4.4.1 would require.
+    expect(screen.height).toBe(1 * 30 - 10);
     expect(screen.centerY).toBeCloseTo(layout.height / 2);
+  });
+
+  it('spans the full column extent when an element omits col (§4.4.1)', () => {
+    const withScreen = mapWith({
+      id: 'house',
+      layout: 'grid',
+      rows: [
+        { id: 'screen', index: 0 },
+        { id: 'A', index: 1 },
+      ],
+      seats: [
+        { id: 'A1', row: 'A', col: 1, type: 'standard' },
+        { id: 'A2', row: 'A', col: 2, type: 'standard' },
+        { id: 'A3', row: 'A', col: 3, type: 'standard' },
+      ],
+      elements: [{ id: 'screen', kind: 'screen', label: 'SCREEN', row: 'screen', width: 1 }],
+    }).sections[0];
+
+    const layout = placed(withScreen, { seatSize: 20, seatGap: 10 });
+    const [screen] = layout.elements;
+    // Three columns wide, less the trailing gap — `width: 1` is ignored.
+    expect(screen.width).toBe(3 * 30 - 10);
+    expect(screen.x).toBe(layout.seats[0].x);
   });
 });
 
-describe('grid headroom', () => {
-  const hall = mapWith({
+describe('empty rows (§4.2.2)', () => {
+  const seats = [
+    { id: 'A1', row: 'A', col: 1, type: 'standard' },
+    { id: 'B1', row: 'B', col: 1, type: 'standard' },
+  ];
+  const elements = [{ id: 'exit', kind: 'exit', label: 'EXIT', row: 'B', col: 3 }];
+
+  /** The same hall with no registry at all: rows are exactly the seats' rows. */
+  const bareHall = mapWith({ id: 'house', layout: 'grid', seats, elements }).sections[0];
+
+  /** Four empty rows ahead of row A — a cinema's screen and its throw. */
+  const roomyHall = mapWith({
     id: 'house',
     layout: 'grid',
-    seats: [
-      { id: 'A1', row: 'A', col: 1, type: 'standard' },
-      { id: 'B1', row: 'B', col: 1, type: 'standard' },
+    rows: [
+      { id: 'screen-1', index: 0 },
+      { id: 'screen-2', index: 1 },
+      { id: 'throw-1', index: 2 },
+      { id: 'throw-2', index: 3 },
+      { id: 'A', index: 4 },
+      { id: 'B', index: 5 },
     ],
-    elements: [{ id: 'exit', kind: 'exit', label: 'EXIT', row: 'B', col: 3 }],
+    seats,
+    elements,
   }).sections[0];
 
   const opts = { seatSize: 20, seatGap: 10 };
 
-  it('is inert by default, so an ordinary grid is unchanged', () => {
-    expect(placed(hall, opts)).toEqual(placed(hall, { ...opts, headroomRows: 0 }));
+  it('leaves a section whose rows all carry seats unchanged', () => {
+    const declared = mapWith({
+      id: 'house',
+      layout: 'grid',
+      rows: [
+        { id: 'A', index: 0 },
+        { id: 'B', index: 1 },
+      ],
+      seats,
+      elements,
+    }).sections[0];
+    expect(placed(declared, opts)).toEqual(placed(bareHall, opts));
   });
 
-  it('pushes the first row down by whole row pitches', () => {
-    const bare = placed(hall, opts);
-    const roomy = placed(hall, { ...opts, headroomRows: 4 });
-    // Pitch is 30, so four rows of headroom is 120.
+  it('pushes the first seat row down by one pitch per empty row', () => {
+    const bare = placed(bareHall, opts);
+    const roomy = placed(roomyHall, opts);
+    // Pitch is 30, so four declared empty rows is 120.
     expect(roomy.seats[0].y - bare.seats[0].y).toBe(4 * 30);
   });
 
-  it('grows the canvas by the reserved band, rather than crowding the rows', () => {
-    const bare = placed(hall, opts);
-    const roomy = placed(hall, { ...opts, headroomRows: 4 });
+  it('grows the canvas by the reserved rows, rather than crowding the seat rows', () => {
+    const bare = placed(bareHall, opts);
+    const roomy = placed(roomyHall, opts);
     expect(roomy.height - bare.height).toBe(4 * 30);
-    // Row spacing itself is untouched — the band is added, not redistributed.
+    // Spacing between the seat rows themselves is untouched.
     expect(roomy.seats[1].y - roomy.seats[0].y).toBe(bare.seats[1].y - bare.seats[0].y);
   });
 
   it('carries a row-addressed element down with its row', () => {
-    const roomy = placed(hall, { ...opts, headroomRows: 4 });
+    const roomy = placed(roomyHall, opts);
     // The exit sits in row B, so it must stay level with row B's seat.
     expect(roomy.elements[0].y).toBe(roomy.seats[1].y);
   });
 
-  it('accepts a fractional band, since a screen is not a whole row tall', () => {
-    const bare = placed(hall, opts);
-    const roomy = placed(hall, { ...opts, headroomRows: 1.5 });
-    expect(roomy.seats[0].y - bare.seats[0].y).toBe(1.5 * 30);
+  it('places an element in the empty row declared for it', () => {
+    const withScreen = mapWith({
+      id: 'house',
+      layout: 'grid',
+      rows: [
+        { id: 'screen', index: 0 },
+        { id: 'throw', index: 1 },
+        { id: 'A', index: 2 },
+      ],
+      seats: [{ id: 'A1', row: 'A', col: 1, type: 'standard' }],
+      elements: [
+        { id: 'screen', kind: 'screen', label: 'SCREEN', row: 'screen', col: 1, height: 1 },
+      ],
+    }).sections[0];
+
+    const layout = placed(withScreen, opts);
+    const [screen] = layout.elements;
+    // Two rows above row A: the screen's own, and the throw beneath it.
+    expect(layout.seats[0].y - screen.y).toBe(2 * 30);
+    expect(screen.height).toBe(1 * 30 - 10);
+  });
+
+  it('lets an element span several empty rows (§4.4.1)', () => {
+    const withScreen = mapWith({
+      id: 'house',
+      layout: 'grid',
+      rows: [
+        { id: 'screen-1', index: 0 },
+        { id: 'screen-2', index: 1 },
+        { id: 'A', index: 2 },
+      ],
+      seats: [{ id: 'A1', row: 'A', col: 1, type: 'standard' }],
+      elements: [
+        { id: 'screen', kind: 'screen', label: 'SCREEN', row: 'screen-1', col: 1, height: 2 },
+      ],
+    }).sections[0];
+
+    const [screen] = placed(withScreen, opts).elements;
+    expect(screen.height).toBe(2 * 30 - 10);
   });
 });
 

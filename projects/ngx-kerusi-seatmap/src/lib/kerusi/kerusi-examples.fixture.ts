@@ -1,8 +1,8 @@
 import { KerusiMap } from './kerusi-map.model';
 import { KerusiState } from './kerusi-state.model';
 
-// The five worked examples from the Kerusi standard §6, transcribed verbatim as
-// test fixtures. Non-normative in the spec; here they anchor the adapter and
+// Worked examples from the Kerusi standard §6, transcribed verbatim as test
+// fixtures. Non-normative in the spec; here they anchor the adapter and
 // validator tests to the document that defines correct behavior.
 
 /** §6.1 — minimal generic map (bus, 2+2 layout). Column 3 is the aisle. */
@@ -113,6 +113,47 @@ export const FLIGHT_MAP: KerusiMap = {
 };
 
 /** §6.4 — matching state via direct `mapId` (sparse: 3 of N seats listed). */
+/**
+ * §6.7 — the same kind of room as §6.2, addressed as a grid, where vertical
+ * space has to be declared rather than being free. Four rows carry no seats:
+ * `screen-1`/`screen-2` hold the screen, `throw` is the gap in front of it, and
+ * `cross-aisle` is a walkway between rows B and C. Column 3 is the centre
+ * aisle, omitted as in §6.1.
+ */
+export const CINEMA_GRID_MAP: KerusiMap = {
+  kerusi: '1.0',
+  id: 'cinema3-hallB',
+  name: 'Hall B',
+  domain: 'cinema',
+  legend: [{ id: 'standard', label: 'Standard', defaultPriceTier: 'regular' }],
+  priceTiers: [{ id: 'regular', price: { amount: 1500, currency: 'MYR' } }],
+  sections: [
+    {
+      id: 'stalls',
+      layout: 'grid',
+      rows: [
+        { id: 'screen-1', index: 0 },
+        { id: 'screen-2', index: 1 },
+        { id: 'throw', index: 2 },
+        { id: 'A', label: 'A', index: 3 },
+        { id: 'B', label: 'B', index: 4 },
+        { id: 'cross-aisle', index: 5 },
+        { id: 'C', label: 'C', index: 6 },
+      ],
+      elements: [{ id: 'screen', kind: 'screen', label: 'SCREEN', row: 'screen-1', height: 2 }],
+      seats: [
+        { id: 'A1', label: '1', row: 'A', col: 1, type: 'standard' },
+        { id: 'A2', label: '2', row: 'A', col: 2, type: 'standard' },
+        { id: 'A3', label: '3', row: 'A', col: 4, type: 'standard' },
+        { id: 'B1', label: '1', row: 'B', col: 1, type: 'standard' },
+        { id: 'B2', label: '2', row: 'B', col: 2, type: 'standard' },
+        { id: 'B3', label: '3', row: 'B', col: 4, type: 'standard' },
+        { id: 'C1', label: '1', row: 'C', col: 1, type: 'standard' },
+      ],
+    },
+  ],
+};
+
 export const CINEMA_STATE_BY_MAP: KerusiState = {
   kerusi: '1.0',
   mapId: 'cinema3-hallA',

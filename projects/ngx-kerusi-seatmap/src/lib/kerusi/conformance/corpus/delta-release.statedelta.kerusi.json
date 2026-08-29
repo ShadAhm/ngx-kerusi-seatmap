@@ -1,0 +1,14 @@
+{
+  "kerusi": "1.0",
+  "sessionId": "MH123-2026-08-17",
+  "updatedAt": "2026-08-17T09:15:30Z",
+  "changes": {
+    "1A": {
+      "status": "available"
+    },
+    "12B": {
+      "status": "held",
+      "holdExpires": "2026-08-17T09:25:30Z"
+    }
+  }
+}

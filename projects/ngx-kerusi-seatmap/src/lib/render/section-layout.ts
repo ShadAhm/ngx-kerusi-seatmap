@@ -53,13 +53,6 @@ export interface SectionLayoutOptions {
   seatGap?: number;
   /** Freeform viewBox width; height follows from the aspect ratio. */
   freeformBasis?: number;
-  /**
-   * Empty rows' worth of space above the first row, for a screen or stage to
-   * occupy. Counted in row pitches, so it tracks `seatSize`. Grid mode only:
-   * the grid's own padding is a uniform margin, far too small to read as the
-   * throw between a cinema screen and its front row.
-   */
-  headroomRows?: number;
   /** Overrides `Section.aspectRatio`. */
   aspectRatio?: string;
   /** Mirrors the grid horizontally, for right-to-left locales. */
@@ -96,25 +89,26 @@ export function computeSectionLayout(
 // --- grid -------------------------------------------------------------------
 
 /**
- * Places seats on the `(row, col)` lattice. A column no seat occupies is simply
+ * Places seats and elements on the `(row, col)` lattice.
+ *
+ * Both axes reserve space the same way. A column no seat occupies is simply
  * empty space — §4.3.2's "no filler objects": the gap that is an aisle needs no
- * placeholder seat, and none is synthesized.
+ * placeholder seat, and none is synthesized. A row no seat occupies is an empty
+ * row the document declared (§4.2.2), already materialized in `section.rows`,
+ * so it costs a full row pitch here without this function knowing it is empty.
+ * That is what opens the throw between a cinema screen and row A.
  */
 function computeGridLayout(section: RenderSection, options: SectionLayoutOptions): SectionLayout {
   const size = options.seatSize ?? DEFAULTS.seatSize;
   const gap = options.seatGap ?? DEFAULTS.seatGap;
   const pitch = size + gap;
   const padding = size * PADDING_RATIO;
-  // Reserved band above row 0. Rows are seat-derived and their index is a dense
-  // ordinal (§ buildRows), so a document cannot open this gap by numbering its
-  // rows from 4 — the space has to be reserved here or not at all.
-  const headroom = Math.max(options.headroomRows ?? 0, 0) * pitch;
 
   const columns = columnExtent(section);
   const rowCount = Math.max(section.rows.length, 1);
 
   const width = padding * 2 + columns.count * pitch - gap;
-  const height = padding * 2 + headroom + rowCount * pitch - gap;
+  const height = padding * 2 + rowCount * pitch - gap;
 
   /** Column index → x, mirrored when the locale reads right-to-left. */
   const colX = (col: number): number => {
@@ -124,7 +118,7 @@ function computeGridLayout(section: RenderSection, options: SectionLayoutOptions
 
   const seats: PlacedSeat[] = [];
   for (const row of section.rows) {
-    const y = padding + headroom + row.index * pitch;
+    const y = padding + row.index * pitch;
     row.seats.forEach((seat, i) => {
       // A grid seat is required to carry `col` (§4.5); fall back to its index
       // so an unvalidated document still draws something in order.
@@ -134,27 +128,33 @@ function computeGridLayout(section: RenderSection, options: SectionLayoutOptions
   }
 
   const elements: PlacedElement[] = section.elements.map((element) => {
-    // In grid mode an element's width/height are cell spans, not percentages:
-    // a two-seat-wide lavatory is `{ col: 1, width: 2 }`.
-    const spanX = Math.max(element.width ?? 1, 0.1);
-    const spanY = Math.max(element.height ?? 1, 0.1);
-    const elWidth = spanX * pitch - gap;
+    // §4.4.1: in grid mode width/height are column and row spans in cells, not
+    // percentages — a two-seat-wide lavatory is `{ col: 1, width: 2 }`, and a
+    // screen filling two empty rows is `{ row: "screen-1", height: 2 }`. The
+    // spec requires positive integers; a fractional span is an
+    // `element-span-invalid` the validator rejects, and is rounded here so an
+    // unvalidated document still draws something.
+    const spanY = gridSpan(element.height);
+    // Omitting `col` spans the section's full column extent and ignores
+    // `width` — the usual form for a screen or a stage (§4.4.1).
+    const elWidth =
+      element.col !== undefined
+        ? gridSpan(element.width) * pitch - gap
+        : columns.count * pitch - gap;
     const elHeight = spanY * pitch - gap;
 
-    // An element with x/y in a grid section (the validator warns about this)
-    // still places, by percentage of the section box.
+    // An element carrying x/y in a grid section violates §4.4.1 and the
+    // validator rejects it; it still places, by percentage of the section box,
+    // rather than collapsing into the corner.
     const x =
       element.col !== undefined
         ? colX(element.col)
         : element.x !== undefined
           ? (element.x / 100) * width - elWidth / 2
           : padding;
-    // A row-addressed element rides with its row; a percentage `y` stays
-    // measured from the canvas top, which is what lets a screen sit inside the
-    // headroom band while the rows move down beneath it.
     const y =
       element.rowIndex !== undefined
-        ? padding + headroom + element.rowIndex * pitch
+        ? padding + element.rowIndex * pitch
         : element.y !== undefined
           ? (element.y / 100) * height - elHeight / 2
           : padding;
@@ -163,6 +163,15 @@ function computeGridLayout(section: RenderSection, options: SectionLayoutOptions
   });
 
   return { width, height, seats, elements };
+}
+
+/**
+ * A grid `width`/`height`, normalized. §4.4.1 makes these positive integers
+ * defaulting to 1; rounding rather than rejecting keeps an invalid document
+ * drawable, since the validator is what refuses it.
+ */
+function gridSpan(span: number | undefined): number {
+  return Math.max(Math.round(span ?? 1), 1);
 }
 
 /** The lowest and highest column any seat occupies, and how many that spans. */
@@ -174,7 +183,7 @@ function columnExtent(section: RenderSection): { min: number; max: number; count
   // lavatory at column 4 reaches column 5 and the canvas must cover it.
   const elementCols = section.elements
     .filter((e) => e.col !== undefined && e.col !== null)
-    .flatMap((e) => [e.col!, e.col! + Math.max(Math.ceil(e.width ?? 1), 1) - 1]);
+    .flatMap((e) => [e.col!, e.col! + gridSpan(e.width) - 1]);
   const all = [...cols, ...elementCols];
 
   if (all.length === 0) {

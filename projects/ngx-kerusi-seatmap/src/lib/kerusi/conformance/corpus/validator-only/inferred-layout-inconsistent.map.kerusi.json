@@ -1,0 +1,27 @@
+{
+  "kerusi": "1.0",
+  "id": "inferred-layout-inconsistent",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "type": "standard"
+        },
+        {
+          "id": "b",
+          "x": 30,
+          "y": 40,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

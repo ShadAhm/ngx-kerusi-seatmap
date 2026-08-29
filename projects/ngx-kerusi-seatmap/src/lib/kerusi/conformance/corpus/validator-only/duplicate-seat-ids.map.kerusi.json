@@ -1,0 +1,31 @@
+{
+  "kerusi": "1.0",
+  "id": "duplicate-seat-ids",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "seats": [
+        {
+          "id": "A1",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "seats": [
+        {
+          "id": "A1",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

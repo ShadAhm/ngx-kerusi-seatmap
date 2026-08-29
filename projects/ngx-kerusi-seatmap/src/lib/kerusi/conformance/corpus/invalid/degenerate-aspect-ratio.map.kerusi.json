@@ -1,0 +1,24 @@
+{
+  "kerusi": "1.0",
+  "id": "degenerate-aspect-ratio",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "layout": "freeform",
+      "aspectRatio": "0:0",
+      "seats": [
+        {
+          "id": "a",
+          "x": 10,
+          "y": 20,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

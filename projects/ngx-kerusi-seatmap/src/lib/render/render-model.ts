@@ -69,7 +69,7 @@ export interface RenderSeat {
   // --- availability ---------------------------------------------------------
   /** From the merged state; `"available"` when the seat is absent (§5.1). */
   status: SeatRenderStatus;
-  /** ISO 8601; meaningful when `status === "held"`. */
+  /** RFC 3339 (§5.1.1); meaningful when `status === "held"`. */
   holdExpires?: string;
   /** Whether this seat may currently be picked, per the caller's rules. */
   selectable: boolean;
@@ -101,10 +101,24 @@ export interface RenderRow {
   id: string;
   /** The display label, defaulting to `id`. */
   label?: string;
-  /** Position among the section's rows, after `RowMeta.index` ordering. */
+  /** Position among the section's rows, after the §4.2.1 ordering. */
   index: number;
   /** The seats in this row, ordered by `col` (grid/mixed) or `x` (freeform). */
   seats: readonly RenderSeat[];
+  /**
+   * An **empty row** (§4.2.2): declared by `Section.rows`, referenced by no
+   * seat, and still occupying a slot — it reserves the vertical space one row
+   * of seats would. This is what a document uses to open the throw between a
+   * cinema screen and row A, or a cross-aisle mid-section.
+   */
+  empty: boolean;
+}
+
+/** A `Direction` (§4.10) with both ends localized. Informational only. */
+export interface RenderDirection {
+  axis: 'row' | 'col' | 'x' | 'y';
+  low: string;
+  high: string;
 }
 
 export interface RenderSection {
@@ -121,6 +135,12 @@ export interface RenderSection {
   seats: readonly RenderSeat[];
   /** Non-bookable features (§4.4). */
   elements: readonly RenderElement[];
+  /**
+   * `Section.directions` localized (§4.10) — what an axis means in the physical
+   * world. Informational only: nothing in this library reads it to decide
+   * layout or screen placement, exactly as nothing branches on `RenderMap.domain`.
+   */
+  directions?: readonly RenderDirection[];
   source: Section;
 }
 

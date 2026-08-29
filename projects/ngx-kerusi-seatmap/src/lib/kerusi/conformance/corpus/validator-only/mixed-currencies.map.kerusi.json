@@ -1,0 +1,37 @@
+{
+  "kerusi": "1.0",
+  "id": "mixed-currencies",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "priceTiers": [
+    {
+      "id": "regular",
+      "price": {
+        "amount": 1500,
+        "currency": "MYR"
+      }
+    },
+    {
+      "id": "premium",
+      "price": {
+        "amount": 4500,
+        "currency": "USD"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { KerusiMap } from '../kerusi/kerusi-map.model';
 import { KerusiState } from '../kerusi/kerusi-state.model';
-import { BUS_MAP, CINEMA_MAP, CINEMA_STATE_BY_MAP } from '../kerusi/kerusi-examples.fixture';
+import {
+  BUS_MAP,
+  CINEMA_GRID_MAP,
+  CINEMA_MAP,
+  CINEMA_STATE_BY_MAP,
+} from '../kerusi/kerusi-examples.fixture';
 import { buildRenderModel } from './build-render-model';
 
 /** A map with a grid balcony and a freeform stalls — the multi-section case. */
@@ -112,6 +117,133 @@ describe('buildRenderModel — rows and seat order', () => {
     expect(stalls.rows).toHaveLength(1);
     expect(stalls.rows[0].label).toBeUndefined();
     expect(stalls.seats.map((s) => s.id)).toEqual(['S1', 'S2']);
+  });
+});
+
+describe('buildRenderModel — the row registry and empty rows (§4.2)', () => {
+  const stalls = () => buildRenderModel(CINEMA_GRID_MAP).sections[0];
+
+  it('materializes every declared row, including the ones no seat references', () => {
+    // §7: a conformant consumer materializes every row a section declares. Rows
+    // used to come from the seats, so these four vanished and the screen had
+    // nowhere to sit.
+    expect(stalls().rows.map((r) => r.id)).toEqual([
+      'screen-1',
+      'screen-2',
+      'throw',
+      'A',
+      'B',
+      'cross-aisle',
+      'C',
+    ]);
+  });
+
+  it('marks a row no seat references as empty, and leaves it seatless', () => {
+    const empties = stalls().rows.filter((r) => r.empty);
+    expect(empties.map((r) => r.id)).toEqual(['screen-1', 'screen-2', 'throw', 'cross-aisle']);
+    expect(empties.every((r) => r.seats.length === 0)).toBe(true);
+  });
+
+  it('gives a seat the row index of its slot in the full registry', () => {
+    // Row A is fourth, because three declared rows precede it — not first,
+    // which is where a seat-derived list would have put it.
+    expect(buildRenderModel(CINEMA_GRID_MAP).seatsById.get('A1')?.rowIndex).toBe(3);
+  });
+
+  it('anchors a row-addressed element to its empty row', () => {
+    expect(stalls().elements[0].rowIndex).toBe(0);
+  });
+
+  it('orders unindexed rows after indexed ones, in declaration order (§4.2.1)', () => {
+    const model = buildRenderModel({
+      kerusi: '1.0',
+      id: 'm',
+      legend: [{ id: 'standard' }],
+      sections: [
+        {
+          id: 's',
+          layout: 'grid',
+          rows: [{ id: 'late' }, { id: 'B', index: 11 }, { id: 'earlier' }, { id: 'A', index: 0 }],
+          seats: [{ id: 'A1', row: 'A', col: 1, type: 'standard' }],
+        },
+      ],
+    });
+    // `index` is an ordering key, not a position: A and B are adjacent despite
+    // the eleven-wide gap between their numbers.
+    expect(model.sections[0].rows.map((r) => r.id)).toEqual(['A', 'B', 'late', 'earlier']);
+  });
+
+  it('keeps seat-derived rows when a section declares no registry', () => {
+    // §4.6: with no `rows`, a seat's row is opaque free text and the rows are
+    // exactly the ones the seats name, in first-appearance order.
+    const rows = buildRenderModel(BUS_MAP).sections[0].rows;
+    expect(rows.map((r) => r.id)).toEqual(['1']);
+    expect(rows[0].empty).toBe(false);
+  });
+
+  it('still renders a seat whose row the registry does not declare', () => {
+    // An `element-row-unresolved`-style §4.6 violation on the seat side. The
+    // validator reports it; dropping the seat here would hide it instead.
+    const model = buildRenderModel({
+      kerusi: '1.0',
+      id: 'm',
+      legend: [{ id: 'standard' }],
+      sections: [
+        {
+          id: 's',
+          layout: 'grid',
+          rows: [{ id: 'A', index: 0 }],
+          seats: [
+            { id: 'A1', row: 'A', col: 1, type: 'standard' },
+            { id: 'Z1', row: 'Z', col: 1, type: 'standard' },
+          ],
+        },
+      ],
+    });
+    expect(model.sections[0].rows.map((r) => r.id)).toEqual(['A', 'Z']);
+    expect(model.seatsById.get('Z1')?.rowIndex).toBe(1);
+  });
+});
+
+describe('buildRenderModel — direction labels (§4.10)', () => {
+  const withDirections = (locale?: string) =>
+    buildRenderModel(
+      {
+        kerusi: '1.0',
+        id: 'm',
+        locale: 'ms-MY',
+        legend: [{ id: 'standard' }],
+        sections: [
+          {
+            id: 'coach-b',
+            layout: 'grid',
+            directions: [
+              {
+                axis: 'row',
+                low: { en: 'front of train', 'ms-MY': 'hadapan kereta api' },
+                high: 'back of train',
+              },
+            ],
+            seats: [{ id: '1A', row: '1', col: 1, type: 'standard' }],
+          },
+        ],
+      },
+      undefined,
+      { locale },
+    ).sections[0];
+
+  it('localizes both ends against the map locale, as it does a section label', () => {
+    expect(withDirections().directions).toEqual([
+      { axis: 'row', low: 'hadapan kereta api', high: 'back of train' },
+    ]);
+  });
+
+  it('honors a locale override', () => {
+    expect(withDirections('en').directions?.[0].low).toBe('front of train');
+  });
+
+  it('is absent when the section declares none', () => {
+    expect(buildRenderModel(BUS_MAP).sections[0].directions).toBeUndefined();
   });
 });
 

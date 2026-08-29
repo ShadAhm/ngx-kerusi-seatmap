@@ -1,0 +1,30 @@
+{
+  "kerusi": "1.0",
+  "id": "bad-currency",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "priceTiers": [
+    {
+      "id": "regular",
+      "price": {
+        "amount": 1500,
+        "currency": "myr"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

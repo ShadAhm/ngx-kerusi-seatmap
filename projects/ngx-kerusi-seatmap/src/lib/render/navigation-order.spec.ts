@@ -33,6 +33,43 @@ describe('grid navigation follows col (§4.3.1)', () => {
   });
 });
 
+describe('empty rows are stepped over, not into (§4.2.2)', () => {
+  // A cross-aisle between rows A and C: declared, seatless, and worth a row of
+  // space on the canvas. Arrow movement has to ignore it, or Down from A1 would
+  // land nowhere and the row below would be unreachable.
+  const withCrossAisle: KerusiMap = {
+    kerusi: '1.0',
+    id: 'm',
+    legend: [{ id: 'standard' }],
+    sections: [
+      {
+        id: 's',
+        layout: 'grid',
+        rows: [
+          { id: 'A', index: 0 },
+          { id: 'cross-aisle', index: 1 },
+          { id: 'C', index: 2 },
+        ],
+        seats: [
+          { id: 'A1', row: 'A', col: 1, type: 'standard' },
+          { id: 'C1', row: 'C', col: 1, type: 'standard' },
+        ],
+      },
+    ],
+  };
+
+  const graph = graphOf(withCrossAisle);
+
+  it('moves from the row above to the row below in one step', () => {
+    expect(graph.neighbours.get('A1')!.down).toBe('C1');
+    expect(graph.neighbours.get('C1')!.up).toBe('A1');
+  });
+
+  it('leaves the empty row out of the traversal order entirely', () => {
+    expect(graph.order).toEqual(['A1', 'C1']);
+  });
+});
+
 describe('vertical movement picks the nearest column', () => {
   const staggered: KerusiMap = {
     kerusi: '1.0',

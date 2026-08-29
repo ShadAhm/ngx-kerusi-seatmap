@@ -7,9 +7,9 @@ import { KerusiMap, KerusiSession, KerusiState } from 'ngx-kerusi-seatmap';
  * symmetric `companions` pairs so they book together.
  *
  * Exercises: grid positioning, multiple sections-worth of column reuse via
- * skipped aisle columns, a screen addressed by col with a percentage `y`
- * sitting it in the headroom the grid reserves above row A, price tiers,
- * companions, and all four availability states.
+ * skipped aisle columns, two empty rows (§4.2.2) holding the screen and the
+ * throw in front of it, price tiers, companions, and all four availability
+ * states.
  */
 
 /** A 12-seat standard row: two-seat wings at cols 1–2 / 13–14, an 8-seat
@@ -68,29 +68,34 @@ export const CINEMA_MAP: KerusiMap = {
       label: { en: 'Hall 3', ms: 'Dewan 3' },
       layout: 'grid',
       rows: [
-        { id: 'A', label: 'A', index: 0 },
-        { id: 'B', label: 'B', index: 1 },
-        { id: 'C', label: 'C', index: 2 },
-        { id: 'D', label: 'D', index: 3 },
-        { id: 'E', label: 'E', index: 4 },
-        { id: 'L', label: 'L', index: 5 },
+        // Two rows carry no seats. `screen` holds the screen and `throw` is the
+        // gap between it and row A — an empty row is a real row (§4.2.2), so
+        // both reserve a full row of vertical space and no renderer setting is
+        // involved. Row order is `index` order (§4.2.1), and `index` is a key
+        // rather than a position: numbering A from 2 here reserves nothing.
+        { id: 'screen', index: 0 },
+        { id: 'throw', index: 1 },
+        { id: 'A', label: 'A', index: 2 },
+        { id: 'B', label: 'B', index: 3 },
+        { id: 'C', label: 'C', index: 4 },
+        { id: 'D', label: 'D', index: 5 },
+        { id: 'E', label: 'E', index: 6 },
+        { id: 'L', label: 'L', index: 7 },
       ],
       elements: [
         {
           id: 'screen',
           kind: 'screen',
           label: 'SCREEN',
-          // `col` places it on the grid horizontally, same as a seat. There is
-          // no seatless row to anchor it to vertically (§4.2 — rows are
-          // seat-derived), so `y` — a percentage of the section canvas, since
-          // no `row` is given — sits it near the top, inside the band the
-          // scenario's `headroomRows` reserves above row A. `width`/`height`
-          // stay cell-span units regardless (§ computeGridLayout); the arc
-          // bulges a further `height * 1.6` toward the seats (§ screenPath).
+          // Positioned on the grid like a seat, as §4.4.1 requires of a grid
+          // element — no `x`/`y` anywhere in this section. `row` anchors it to
+          // the empty row declared for it; `col`/`width` are a column span, so
+          // it reaches cols 1–14 and stops short of the exits at 0 and 15.
+          // Omitting `col` would span the section's full width instead.
+          row: 'screen',
           col: 1,
-          y: 9,
           width: 14,
-          height: 0.55,
+          height: 1,
         },
         { id: 'exit-left', kind: 'exit', label: 'EXIT', row: 'L', col: 0 },
         { id: 'exit-right', kind: 'exit', label: 'EXIT', row: 'L', col: 15 },

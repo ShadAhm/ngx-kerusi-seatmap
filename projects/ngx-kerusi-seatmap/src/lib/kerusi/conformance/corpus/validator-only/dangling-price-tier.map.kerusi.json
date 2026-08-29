@@ -1,0 +1,31 @@
+{
+  "kerusi": "1.0",
+  "id": "dangling-price-tier",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "priceTiers": [
+    {
+      "id": "regular",
+      "price": {
+        "amount": 1500,
+        "currency": "MYR"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "seats": [
+        {
+          "id": "a",
+          "col": 1,
+          "type": "standard",
+          "priceTier": "premium"
+        }
+      ]
+    }
+  ]
+}

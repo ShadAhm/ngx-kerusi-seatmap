@@ -12,6 +12,7 @@ export * from './kerusi-map.model';
 export * from './kerusi-state.model';
 export * from './kerusi-violation';
 export * from './kerusi-layout-mode';
+export * from './kerusi-rows';
 export * from './kerusi-locale';
 export * from './kerusi-price';
 export * from './kerusi-validator';

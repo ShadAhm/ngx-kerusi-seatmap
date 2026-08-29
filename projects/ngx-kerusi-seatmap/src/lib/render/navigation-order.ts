@@ -99,11 +99,15 @@ interface NavSeat {
 /**
  * Grid and mixed sections: the rows the render model already grouped, with
  * seats ordered by `col`. `RenderRow.seats` is already in that order.
+ *
+ * Empty rows (§4.2.2) are skipped: they reserve space on the canvas but hold
+ * nothing to move to, and an empty band would strand an arrow press between two
+ * rows of seats.
  */
 function gridBands(section: RenderSection): NavSeat[][] {
-  return section.rows.map((row) =>
-    row.seats.map((seat, i) => ({ id: seat.id, ordinal: seat.col ?? i })),
-  );
+  return section.rows
+    .filter((row) => row.seats.length > 0)
+    .map((row) => row.seats.map((seat, i) => ({ id: seat.id, ordinal: seat.col ?? i })));
 }
 
 /**
@@ -124,7 +128,7 @@ function freeformBands(section: RenderSection): NavSeat[][] {
 
   const hasRowLabels = section.seats.some((s) => s.row !== undefined && s.row !== '');
   if (hasRowLabels) {
-    return section.rows.map((row) => toNav(row.seats));
+    return section.rows.filter((row) => row.seats.length > 0).map((row) => toNav(row.seats));
   }
 
   const sorted = [...section.seats].sort((a, b) => (a.y ?? 0) - (b.y ?? 0));

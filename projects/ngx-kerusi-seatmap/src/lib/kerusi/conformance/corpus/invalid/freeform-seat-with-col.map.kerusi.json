@@ -1,0 +1,24 @@
+{
+  "kerusi": "1.0",
+  "id": "freeform-seat-with-col",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "layout": "freeform",
+      "seats": [
+        {
+          "id": "a",
+          "x": 10,
+          "y": 20,
+          "col": 1,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "kerusi": "1.0",
+  "id": "mixed-element-fractional-span",
+  "legend": [
+    {
+      "id": "standard"
+    }
+  ],
+  "sections": [
+    {
+      "id": "s",
+      "layout": "mixed",
+      "rows": [
+        {
+          "id": "screen-1",
+          "index": 0
+        },
+        {
+          "id": "A",
+          "index": 1
+        }
+      ],
+      "elements": [
+        {
+          "id": "screen",
+          "kind": "screen",
+          "row": "screen-1",
+          "col": 1,
+          "height": 1.5
+        }
+      ],
+      "seats": [
+        {
+          "id": "a",
+          "row": "A",
+          "col": 1,
+          "x": 10,
+          "y": 20,
+          "type": "standard"
+        }
+      ]
+    }
+  ]
+}

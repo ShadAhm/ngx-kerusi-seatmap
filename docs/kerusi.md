@@ -138,23 +138,84 @@ sections: [
 Sections render in `Section.index` order. Restrict or reorder them with
 `[sectionIds]`, and tune individual ones with `[sectionOverrides]`.
 
+## Rows and vertical space (§4.2)
+
+`Section.rows` is not a container — seats never live inside a row. But where a
+section declares it, it is that section's **complete row registry**: the rows
+come from it rather than from the seats that happen to reference one.
+
+That is what makes an **empty row** work. A `RowMeta` no seat references is
+still a row, occupies a slot, and reserves the vertical space one row of seats
+would (§4.2.2). It is the row-axis counterpart to a skipped column: a grid
+section opens the throw between a cinema screen and row A, or a cross-aisle
+mid-section, by declaring rows for them.
+
+```ts
+{ id: 'stalls', layout: 'grid',
+  rows: [
+    { id: 'screen', index: 0 },       // no seats — the screen sits here
+    { id: 'throw', index: 1 },        // no seats — the gap in front of row A
+    { id: 'A', label: 'A', index: 2 },
+    { id: 'B', label: 'B', index: 3 },
+    { id: 'cross-aisle', index: 4 },  // no seats — a walkway
+    { id: 'C', label: 'C', index: 5 },
+  ],
+  elements: [{ id: 'screen', kind: 'screen', label: 'SCREEN', row: 'screen' }],
+  seats: [ /* rows A, B and C */ ],
+}
+```
+
+`index` is an **ordering key, not a position**: rows numbered 0 and 11 with
+nothing between them are adjacent, two rows and not twelve, so renumbering a
+section reserves nothing. Rows without an `index` sort after those that have
+one, in declaration order (§4.2.1). Every declared row reaches the render model
+as a `RenderRow`, with `empty: true` on the seatless ones; keyboard navigation
+steps over them.
+
+With no `rows` at all, a seat's `row` is opaque free text and the section's rows
+are exactly the ones its seats name, in first-appearance order.
+
 ## Elements (§4.4)
 
-Non-bookable fixtures — screens, stages, exits, lavatories, gaps, tables —
-positioned the same way seats are. `id` and `kind` are required.
+Non-bookable fixtures — screens, stages, exits, lavatories, gaps, tables. An
+element is bound to its section's positioning mode exactly as a seat is
+(§4.4.1), and `id` and `kind` are required.
 
 ```ts
 elements: [
   // Freeform: x/y/width/height are percentages of the section canvas.
   { id: 'screen', kind: 'screen', label: 'SCREEN', x: 50, y: 7, width: 66, height: 4 },
-  // Grid: col and row place it in the cell grid; width/height are cell spans.
+  // Grid: row and col place it in the cell grid; width and height are cell
+  // spans — positive integers, defaulting to 1.
   { id: 'lav', kind: 'lavatory', label: 'WC', row: '16', col: 7, width: 2 },
+  // Omitting col spans the section's full column extent, the usual form for a
+  // screen or a stage. height: 2 reaches into the row after this one.
+  { id: 'stage', kind: 'stage', label: 'STAGE', row: 'stage-1', height: 2 },
 ];
 ```
+
+A grid element carrying `x`/`y`, a freeform one carrying `col`, a fractional
+span, or a row span reaching past the section's last row are all rejected —
+`element-layout-mismatch`, `element-span-invalid`, `element-row-span-overrun`.
 
 `kind` drives the shape: a `screen` draws as an arc, a `stage` as a raised
 platform, an `exit` in the accent colour, an `aisle` or `gap` as a dashed
 outline. An unrecognized kind draws as a labelled rectangle.
+
+## Direction labels (§4.10)
+
+`Section.directions` names what an addressing axis means in the physical
+world — which end of a train a row is nearer, which compass direction a stand
+faces:
+
+```ts
+directions: [{ axis: 'row', low: 'front of train', high: 'back of train' }];
+```
+
+Both ends may be a locale map, and both arrive localized on
+`RenderSection.directions`. It is purely informational: no document is rejected
+over it, and nothing here reads it to decide layout or which edge of the screen
+an axis is drawn on — that stays a rendering decision.
 
 ## Seat types, pricing and the legend
 

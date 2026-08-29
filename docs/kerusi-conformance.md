@@ -3,17 +3,25 @@
 Which parts of the **Kerusi Seat Map and Availability Format** this library
 implements, and which it does not.
 
-|               |                                                                                                                                           |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Library       | `ngx-kerusi-seatmap` 1.0.0 (this repository)                                                                                              |
-| Spec assessed | [Kerusi standard v1.0.0-draft](https://github.com/ShadAhm/kerusi/blob/master/RFC/kerusi-standard_v1.0.0-draft.md), strict-layout revision |
-| Date          | 2026-08-19                                                                                                                                |
+|               |                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Library       | `ngx-kerusi-seatmap` 1.1.0 (this repository)                                                                              |
+| Spec assessed | [Kerusi standard v1.0.0-draft](https://github.com/ShadAhm/kerusi/blob/master/RFC/kerusi-standard_v1.0.0-draft.md), rev 13 |
+| Date          | 2026-08-29                                                                                                                |
 
 **Headline:** the library is a conformant **consumer** and **validator** by the
-spec's own §7 definition. It merges state by `Seat.id`, enforces §4.6
-referential integrity including companion symmetry, enforces §4.5 layout
-consistency (which §7 requires of validators at v1.0), applies the §4.9
-price-resolution order, and ignores unrecognized members.
+spec's own §7 definition, on every one of the six requirements §7 now lists. It
+merges state by `Seat.id`, enforces §4.6 referential integrity including
+companion symmetry, enforces §4.5 layout consistency, materializes every row a
+section declares including the empty ones (§4.2.2), enforces the element
+positioning and span rules of §4.4.1, applies the §4.9 price-resolution order,
+and ignores unrecognized members.
+
+Each claim above is asserted file by file against the corpus published with the
+standard, vendored under
+`projects/ngx-kerusi-seatmap/src/lib/kerusi/conformance/` — including the five
+schema-invalid fixtures this library accepts on purpose, which that folder's
+README explains.
 
 The remaining gaps are scope decisions rather than modelling limits: this is a
 renderer, so it defines no transport, and it ships no JSON Schema.
@@ -49,6 +57,10 @@ Status key: ✅ supported · ⚠️ partial · ❌ not supported
 | -------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `seats` as a flat list                 | ✅     | Grouped into render rows by `Seat.row`; seats never live inside rows.                                                      |
 | `rows` (RowMeta) labels, `index`       | ✅     | Row naming and ordering. A free-text `row` with no `RowMeta` also works.                                                   |
+| `rows` as a complete registry (§4.2)   | ✅     | Where `rows` is present the section's rows come from it, not from the seats that reference one.                            |
+| **§4.2.1** row order                   | ✅     | Indexed rows first ascending, then unindexed in declaration order; `index` treated as a key, never as a position.          |
+| **§4.2.2** empty rows                  | ✅     | A row no seat references is materialized, marked `RenderRow.empty`, and reserves a full row of vertical space in a grid.   |
+| `directions` (§4.10)                   | ✅     | Localized onto `RenderSection.directions`. Informational: never validated against, never read for layout.                  |
 | `Section.index` ordering               | ✅     |                                                                                                                            |
 | **Sections as render units**           | ✅     | Each section is its own `<svg>` with its own `viewBox` and layout mode, and a real `<h3>` heading it is `aria-labelledby`. |
 | Per-section `layout` / `aspectRatio`   | ✅     | Resolved per section. A freeform orchestra and a grid balcony coexist in one map.                                          |
@@ -77,15 +89,15 @@ Status key: ✅ supported · ⚠️ partial · ❌ not supported
 
 ## §4.4 Element
 
-| Feature                             | Status | Notes                                                                                                                                    |
-| ----------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Rendering elements                  | ✅     | In **every** layout mode. Grid-addressed elements place in the cell grid.                                                                |
-| `x`/`y`/`width`/`height`/`rotation` | ✅     | Percentages in freeform; `width`/`height` are cell spans in grid mode.                                                                   |
-| `row` / `col` positioning           | ✅     |                                                                                                                                          |
-| `label`                             | ✅     | Drawn centered, except on kinds that read better unlabelled.                                                                             |
-| `kind`                              | ✅     | Drives the shape: screen (arc), stage, exit (accent), lavatory/galley/table, aisle/gap (dashed). Unknown kinds get a labelled rectangle. |
-| `id`                                | ✅     | Preserved on `RenderElement`.                                                                                                            |
-| Validation                          | ✅     | `id` and `kind` required; duplicate ids rejected; unpositioned or cross-mode elements warned.                                            |
+| Feature                             | Status | Notes                                                                                                                                                                                                                |
+| ----------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rendering elements                  | ✅     | In **every** layout mode. Grid-addressed elements place in the cell grid.                                                                                                                                            |
+| `x`/`y`/`width`/`height`/`rotation` | ✅     | Percentages in freeform; `width`/`height` are cell spans in grid mode.                                                                                                                                               |
+| `row` / `col` positioning           | ✅     |                                                                                                                                                                                                                      |
+| `label`                             | ✅     | Drawn centered, except on kinds that read better unlabelled.                                                                                                                                                         |
+| `kind`                              | ✅     | Drives the shape: screen (arc), stage, exit (accent), lavatory/galley/table, aisle/gap (dashed). Unknown kinds get a labelled rectangle.                                                                             |
+| `id`                                | ✅     | Preserved on `RenderElement`.                                                                                                                                                                                        |
+| Validation                          | ✅     | `id` and `kind` required; duplicate ids rejected; cross-mode placement, invalid spans and overrunning row spans rejected. An element positioned no way at all is a warning — §4.4 does not require one to be placed. |
 
 ## §4.5 Positioning modes
 
@@ -106,6 +118,8 @@ Status key: ✅ supported · ⚠️ partial · ❌ not supported
 | `Seat.type` resolves in `legend`                    | ✅                                          |
 | `Seat.priceTier` resolves in `priceTiers`           | ✅                                          |
 | `Seat.row` resolves in `Section.rows` when declared | ✅                                          |
+| `Element.row` resolves the same way                 | ✅ `element-row-unresolved`.                |
+| Element span stays inside the section's rows        | ✅ `element-row-span-overrun`.              |
 | `Seat.companions[]` resolve within the same section | ✅                                          |
 | `companions` fully symmetric                        | ✅                                          |
 | Errors identify the failing rule and id             | ✅ plus a `severity` and a document `path`. |
@@ -131,6 +145,7 @@ Status key: ✅ supported · ⚠️ partial · ❌ not supported
 | `available`/`booked`/`held`/`blocked`         | ✅     | Four distinct render states; only `available` is selectable by default, and the set is configurable.                                            |
 | Exactly one of `sessionId`/`mapId`            | ✅     | Validated.                                                                                                                                      |
 | `holdExpires`                                 | ✅     | Announced as a clock time, and `[expireHolds]` reverts a lapsed hold on a ticker.                                                               |
+| **§5.1.1** RFC 3339 timestamps                | ✅     | Every timestamp is checked against the RFC 3339 profile, calendar included. An ISO 8601 form the profile excludes is rejected.                  |
 | **§5.2** delta application                    | ✅     | Ordered by `updatedAt`; stale, duplicate and out-of-scope deltas discarded.                                                                     |
 | **§5.2** gap detection                        | ⚠️     | Detected when the transport supplies a monotonic sequence. `updatedAt` alone cannot distinguish a lost message from a quiet period — see below. |
 | Delta transport                               | ❌     | No WebSocket/SSE layer, by design. The spec defines a format, not a transport (§9).                                                             |
@@ -148,17 +163,19 @@ re-fetch".
 
 ## §7 Conformance / §8 Interchange
 
-| Requirement                                         | Status | Notes                                                                                                        |
-| --------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------ |
-| Merge state by `Seat.id`                            | ✅     |                                                                                                              |
-| Enforce §4.6 incl. companion symmetry               | ✅     |                                                                                                              |
-| **Enforce `Section.layout` consistency**            | ✅     | Required of validators at v1.0, and enforced.                                                                |
-| Apply §4.9 price order                              | ✅     |                                                                                                              |
-| Ignore unrecognized members                         | ✅     | Nothing is rejected for an unknown member, and a future `1.x` minor is accepted.                             |
-| Producer conformance                                | n/a    | This library consumes documents; it does not emit them.                                                      |
-| Published JSON Schema (§8)                          | ❌     | None shipped. Validation is the hand-written TypeScript validator, which does enforce every MUST-level rule. |
-| `.kerusi.json` / `application/vnd.kerusi+json` (§8) | ❌     | No loader or media-type handling — callers supply already-parsed objects.                                    |
-| Version negotiation                                 | ✅     | The `kerusi` member's value is checked, accepting `1.x` and rejecting other majors.                          |
+| Requirement                                         | Status | Notes                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merge state by `Seat.id`                            | ✅     |                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Enforce §4.6 incl. companion symmetry               | ✅     |                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Enforce `Section.layout` consistency**            | ✅     | Required of validators at v1.0, and enforced.                                                                                                                                                                                                                                                                                                                                                                 |
+| **Materialize every declared row (§4.2.2)**         | ✅     | Empty rows included, in §4.2.1 order.                                                                                                                                                                                                                                                                                                                                                                         |
+| **Enforce §4.4.1 element positioning and spans**    | ✅     | Mode binding, span integrality, and row-span bounds.                                                                                                                                                                                                                                                                                                                                                          |
+| Apply §4.9 price order                              | ✅     |                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Ignore unrecognized members                         | ✅     | Nothing is rejected for an unknown member, and a future `1.x` minor is accepted.                                                                                                                                                                                                                                                                                                                              |
+| Producer conformance                                | n/a    | This library consumes documents; it does not emit them.                                                                                                                                                                                                                                                                                                                                                       |
+| Published JSON Schema (§8)                          | ❌     | None shipped. Validation is the hand-written TypeScript validator, which does enforce every MUST-level rule of §7. A handful of producer-side shape constraints — a currency's letter case, a price's integrality, the `aspectRatio` pattern, the status enum — belong to the schemas published with the spec and are not duplicated here; vendor those alongside when a producer-side gate is what you need. |
+| `.kerusi.json` / `application/vnd.kerusi+json` (§8) | ❌     | No loader or media-type handling — callers supply already-parsed objects.                                                                                                                                                                                                                                                                                                                                     |
+| Version negotiation                                 | ✅     | The `kerusi` member's value is checked, accepting `1.x` and rejecting other majors.                                                                                                                                                                                                                                                                                                                           |
 
 ## Accessibility and rendering concerns
 
