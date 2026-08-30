@@ -5,6 +5,7 @@ import {
   DeltaApplication,
   expireHolds,
   HeldSeat,
+  heldSeats as heldSeatsOf,
   KerusiState,
   KerusiStateDelta,
   SequenceReader,
@@ -50,17 +51,7 @@ export class KerusiStateStore {
   }
 
   /** Every currently-held seat, with the time left on its hold. */
-  readonly heldSeats = computed<readonly HeldSeat[]>(() => {
-    const nowMs = this._now().getTime();
-    return Object.entries(this._state().seats ?? {})
-      .filter(([, s]) => s.status === 'held' && !!s.holdExpires)
-      .map(([seatId, s]) => ({
-        seatId,
-        expiresAt: s.holdExpires!,
-        msRemaining: Date.parse(s.holdExpires!) - nowMs,
-      }))
-      .sort((a, b) => a.msRemaining - b.msRemaining);
-  });
+  readonly heldSeats = computed<readonly HeldSeat[]>(() => heldSeatsOf(this._state(), this._now()));
 
   /** Offers a delta to the store. Returns what happened to it. */
   apply(delta: KerusiStateDelta): DeltaApplication {

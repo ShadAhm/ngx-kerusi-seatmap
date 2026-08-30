@@ -1,12 +1,16 @@
 import { KerusiMap, KerusiSession, KerusiState } from '@kerusiweb/core';
-import { AIRCRAFT_MAP, AIRCRAFT_SESSION, AIRCRAFT_STATE } from './fixtures/aircraft.kerusi.fixture';
-import { CINEMA_MAP, CINEMA_SESSION, CINEMA_STATE } from './fixtures/cinema.kerusi.fixture';
+import {
+  AIRCRAFT_MAP,
+  AIRCRAFT_SESSION,
+  AIRCRAFT_STATE,
+} from './fixtures/aircraft.kerusi.fixture.js';
+import { CINEMA_MAP, CINEMA_SESSION, CINEMA_STATE } from './fixtures/cinema.kerusi.fixture.js';
 import {
   LECTURE_THEATRE_MAP,
   LECTURE_THEATRE_STATE,
-} from './fixtures/lecture-theatre.kerusi.fixture';
-import { STADIUM_MAP, STADIUM_STATE } from './fixtures/stadium.kerusi.fixture';
-import { TRAIN_MAP, TRAIN_SESSION, TRAIN_STATE } from './fixtures/train.kerusi.fixture';
+} from './fixtures/lecture-theatre.kerusi.fixture.js';
+import { STADIUM_MAP, STADIUM_STATE } from './fixtures/stadium.kerusi.fixture.js';
+import { TRAIN_MAP, TRAIN_SESSION, TRAIN_STATE } from './fixtures/train.kerusi.fixture.js';
 
 /** One showcased venue: its documents, and what about the standard it shows. */
 export interface Scenario {

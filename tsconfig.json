@@ -8,6 +8,9 @@
     "noImplicitReturns": true,
     "paths": {
       "@kerusiweb/core": ["./projects/core/src/public-api.ts"],
+      "@kerusiweb/react": ["./projects/react/src/public-api.ts"],
+      "@kerusi/demo-scenarios": ["./projects/demo-scenarios/src/index.ts"],
+      "@kerusi/demo-scenarios/*": ["./projects/demo-scenarios/src/*"],
       "ngx-kerusi-seatmap": ["./projects/ngx-kerusi-seatmap/src/public-api.ts"]
     },
     "noFallthroughCasesInSwitch": true,
@@ -27,6 +30,9 @@
   "references": [
     {
       "path": "./projects/core/tsconfig.json"
+    },
+    {
+      "path": "./projects/react/tsconfig.json"
     },
     {
       "path": "./projects/ngx-kerusi-seatmap/tsconfig.lib.json"

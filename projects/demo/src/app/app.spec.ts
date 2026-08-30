@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from './app';
-import { SCENARIOS } from './scenarios';
+import { SCENARIOS } from '@kerusi/demo-scenarios';
 
 describe('App', () => {
   let fixture: ComponentFixture<App>;

@@ -7,5 +7,6 @@
  */
 
 export * from './kerusi-seatmap-colors.js';
+export * from './rtl.js';
 export * from './seat-aria.js';
 export * from './selection.js';

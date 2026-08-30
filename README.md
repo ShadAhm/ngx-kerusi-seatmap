@@ -4,10 +4,10 @@
 [![npm](https://img.shields.io/npm/v/ngx-kerusi-seatmap.svg)](https://www.npmjs.com/package/ngx-kerusi-seatmap)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An Angular seat map that renders the **[Kerusi Seat Map & Availability
-Format](https://github.com/ShadAhm/kerusi)** directly as inline SVG — cinemas,
-aircraft, theatres, stadiums, coaches, trains — with keyboard navigation and
-screen-reader support built in.
+An **Angular** and **React** seat map that renders the **[Kerusi Seat Map &
+Availability Format](https://github.com/ShadAhm/kerusi)** directly as inline
+SVG — cinemas, aircraft, theatres, stadiums, coaches, trains — with keyboard
+navigation and screen-reader support built in.
 
 Give it a `KerusiMap` and a `KerusiState` and it draws the venue: each `Section`
 in its own layout mode with its own proportions, seats coloured from the map's
@@ -19,15 +19,17 @@ seats booked as a unit.
 ## Install
 
 ```bash
-npm install @kerusiweb/core ngx-kerusi-seatmap
+npm install @kerusiweb/core ngx-kerusi-seatmap   # Angular
+npm install @kerusiweb/core @kerusiweb/react     # React
 ```
 
-Two packages: [`@kerusiweb/core`](projects/core) holds the framework-agnostic
-logic — document types, the conformance validator, the render model and its
-geometry — and `ngx-kerusi-seatmap` is the Angular binding over it. See
+[`@kerusiweb/core`](projects/core) holds the framework-agnostic logic —
+document types, the conformance validator, the render model and its geometry —
+and each binding is a thin layer over it: components, reactivity, and the DOM.
+Both bindings expose the same surface and emit the same SVG. See
 [docs/architecture.md](docs/architecture.md) for the boundary.
 
-## Quick start
+## Quick start — Angular
 
 ```ts
 import { Component, signal } from '@angular/core';
@@ -75,8 +77,25 @@ export class BusComponent {
 `selection` is a plain list of seat ids. Nothing is mutated, so it works with
 `OnPush`, signals, or any store you already have.
 
-See the [library README](projects/ngx-kerusi-seatmap/README.md) for the full API,
-and [docs/kerusi.md](docs/kerusi.md) for a tour of what the format can express.
+## Quick start — React
+
+```tsx
+import { useState } from 'react';
+import { KerusiSeatmap } from '@kerusiweb/react';
+import '@kerusiweb/react/styles.css';
+
+export function Bus() {
+  const [picked, setPicked] = useState<readonly string[]>([]);
+  return <KerusiSeatmap map={map} state={state} selection={picked} onSelectionChange={setPicked} />;
+}
+```
+
+The same `map` and `state` as above — they are documents, not framework objects.
+React needs the one stylesheet import; Angular ships its CSS inside the bundle.
+
+See the [Angular README](projects/ngx-kerusi-seatmap/README.md) or the
+[React README](projects/react/README.md) for the full API, and
+[docs/kerusi.md](docs/kerusi.md) for a tour of what the format can express.
 
 ## What it supports
 
@@ -91,7 +110,7 @@ is a feature-by-feature audit; the highlights:
 | **Space is declared, not configured** | An empty row (§4.2.2) reserves the throw in front of a cinema screen or a cross-aisle mid-section, so the same document produces the same vertical arrangement in any conformant renderer. |
 | **Accessibility**                     | Roving tabindex, arrow keys that follow the §4.3.1 `col` order, and seats announced with their type, price, status and every §4.3.4 accessibility property.                                |
 | **Companions**                        | `companions` closures book and release together, and a pair whose other half is sold is refused rather than half-taken.                                                                    |
-| **Live availability**                 | `KerusiStateStore` applies deltas in order, discards stale and out-of-scope ones, and reverts lapsed holds.                                                                                |
+| **Live availability**                 | `KerusiStateStore` (Angular) and `useKerusiState` (React) apply deltas in order, discard stale and out-of-scope ones, and revert lapsed holds.                                             |
 | **Validation**                        | Every MUST-level rule, throwing or collecting, with a rule slug and document path per violation — asserted against the example corpus published with the standard.                         |
 
 ## Repository layout
@@ -100,33 +119,42 @@ is a feature-by-feature audit; the highlights:
 | ------------------------------ | ------------------------------------------------------------------------- |
 | `projects/core/`               | `@kerusiweb/core` — framework-agnostic format, render model and geometry. |
 | `projects/ngx-kerusi-seatmap/` | The Angular binding over core.                                            |
-| `projects/demo/`               | Demo app, deployed to GitHub Pages.                                       |
+| `projects/react/`              | `@kerusiweb/react` — the React binding over core.                         |
+| `projects/demo/`               | The Angular demo, deployed to GitHub Pages.                               |
+| `projects/react-demo/`         | The React demo (Vite), showing the same venues.                           |
+| `projects/demo-scenarios/`     | The five venue documents both demos render.                               |
 | `docs/`                        | [Architecture](docs/architecture.md), format guide, conformance report.   |
 
 ## Develop
 
 ```bash
 npm install
-npm start          # serve the demo at http://localhost:4200
-npm run test:ci    # run core + library + demo unit tests
-npm run build:core # build @kerusiweb/core into projects/core/dist
-npm run build:lib  # build core, then the library into dist/ngx-kerusi-seatmap
+npm start           # serve the Angular demo at http://localhost:4200
+npm run start:react # serve the React demo (Vite)
+npm run test:ci     # core + Angular library + Angular demo + React unit tests
+npm run build:core  # build @kerusiweb/core into projects/core/dist
+npm run build:lib   # build core, then the Angular library into dist/ngx-kerusi-seatmap
+npm run build:react # build core, then @kerusiweb/react into projects/react/dist
 ```
 
-The Angular library resolves `@kerusiweb/core` through the npm workspace, so
-core must be built before the library — `build:lib` chains them for you.
+Every binding resolves `@kerusiweb/core` through the npm workspace, so core must
+be built first — `build:lib` and `build:react` each chain it for you. Both demos
+run against source, so a change in core or in either binding hot-reloads.
 
 ## Publishing
 
 Releases are cut manually (CI never publishes to npm):
 
-1. Bump `version` in `projects/core/package.json` and `projects/ngx-kerusi-seatmap/package.json`
-   (keep them in step, and update the `@kerusiweb/core` peer range) and add a `CHANGELOG.md` entry.
-2. `npm run build:lib` (builds core first).
+1. Bump `version` in `projects/core/package.json`, `projects/ngx-kerusi-seatmap/package.json`
+   and `projects/react/package.json` (keep them in step, and update the
+   `@kerusiweb/core` peer range in both bindings) and add a `CHANGELOG.md` entry.
+2. `npm run build:lib && npm run build:react` (each builds core first).
 3. `npm publish --workspace @kerusiweb/core --access public` — core must go out first,
-   since the library declares it as a peer.
+   since both bindings declare it as a peer.
 4. `cd dist/ngx-kerusi-seatmap && npm publish --access public` (add `--dry-run` first to inspect contents).
-5. `git tag vX.Y.Z && git push --tags`, then cut a GitHub Release from the tag.
+5. `npm publish --workspace @kerusiweb/react --access public` (again, `--dry-run` first —
+   it should list `dist/**` and `styles.css`, and nothing from core).
+6. `git tag vX.Y.Z && git push --tags`, then cut a GitHub Release from the tag.
 
 ## History
 

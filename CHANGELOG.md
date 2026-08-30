@@ -6,6 +6,44 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+1. **A React binding, `@kerusiweb/react`.** Same components, same props, same
+   SVG as the Angular package: `<KerusiSeatmap>`, `<KerusiSection>`,
+   `<KerusiLegend>`, plus `useKerusiState` in place of `KerusiStateStore`. Its
+   test suite is the Angular component spec's assertions run against
+   React-rendered DOM, and for the same documents the two bindings emit
+   byte-identical markup.
+
+   React translations of the Angular surface, where they could not be
+   mechanical: `[(selection)]` becomes the controlled/uncontrolled pair
+   (`selection` + `onSelectionChange`, or `defaultSelection`); `validate="throw"`
+   throws during render so an error boundary catches it; focus moves through a
+   ref map rather than a `querySelectorAll` scan; and a repeated live-region
+   message is made distinct with a zero-width space in a single commit, rather
+   than the clear-then-microtask React would batch away.
+
+   Styles ship as one `@kerusiweb/react/styles.css` the consumer imports, since
+   React has no equivalent of Angular's view-encapsulated component CSS. Colours
+   stay bound inline in both bindings, so the three theming tiers
+   (`--kerusi-*` stylesheet property → the `colors` prop → the library default)
+   behave identically.
+
+   The package is built by `tsc` alone, with no bundler, and declares `react`
+   and `@kerusiweb/core` as peers.
+
+2. **`projects/react-demo/`** — a Vite React demo showing the same five venues
+   as the Angular one. The venue documents moved to `projects/demo-scenarios/`
+   so both demos render the same fixtures rather than two copies drifting apart.
+   The published GitHub Pages site remains the Angular demo.
+
+3. **Three functions promoted into `@kerusiweb/core`**, each of which the React
+   binding would otherwise have retyped verbatim from the Angular one:
+   `isRtlLocale` (`view/rtl.ts`), `heldSeats` (`kerusi/kerusi-state.ts` — core
+   already exported the `HeldSeat` type with nothing producing it), and
+   `resolveColors` (`view/kerusi-seatmap-colors.ts`). All three are additive;
+   the Angular binding now calls them instead of its own copies.
+
 ### Changed
 
 1. **The framework-agnostic core is now its own package, `@kerusiweb/core`.**

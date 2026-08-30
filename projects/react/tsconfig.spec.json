@@ -1,0 +1,11 @@
+/* Type-checks the specs, which the build config excludes. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "outDir": "../../out-tsc/react-spec",
+    "types": ["react", "vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": []
+}
