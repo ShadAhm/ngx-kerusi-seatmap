@@ -1,0 +1,11 @@
+/* Type-checking config for the @kerusiweb/core specs (run by vitest). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../out-tsc/core-spec",
+    "noEmit": true,
+    "types": ["vitest/globals"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"],
+  "exclude": []
+}

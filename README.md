@@ -19,14 +19,20 @@ seats booked as a unit.
 ## Install
 
 ```bash
-npm install ngx-kerusi-seatmap
+npm install @kerusiweb/core ngx-kerusi-seatmap
 ```
+
+Two packages: [`@kerusiweb/core`](projects/core) holds the framework-agnostic
+logic — document types, the conformance validator, the render model and its
+geometry — and `ngx-kerusi-seatmap` is the Angular binding over it. See
+[docs/architecture.md](docs/architecture.md) for the boundary.
 
 ## Quick start
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { KerusiSeatmapComponent, type KerusiMap, type KerusiState } from 'ngx-kerusi-seatmap';
+import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
+import type { KerusiMap, KerusiState } from '@kerusiweb/core';
 
 const map: KerusiMap = {
   kerusi: '1.0',
@@ -90,29 +96,37 @@ is a feature-by-feature audit; the highlights:
 
 ## Repository layout
 
-| Path                           | What it is                               |
-| ------------------------------ | ---------------------------------------- |
-| `projects/ngx-kerusi-seatmap/` | The publishable library.                 |
-| `projects/demo/`               | Demo app, deployed to GitHub Pages.      |
-| `docs/`                        | Format guide and the conformance report. |
+| Path                           | What it is                                                                |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `projects/core/`               | `@kerusiweb/core` — framework-agnostic format, render model and geometry. |
+| `projects/ngx-kerusi-seatmap/` | The Angular binding over core.                                            |
+| `projects/demo/`               | Demo app, deployed to GitHub Pages.                                       |
+| `docs/`                        | [Architecture](docs/architecture.md), format guide, conformance report.   |
 
 ## Develop
 
 ```bash
 npm install
 npm start          # serve the demo at http://localhost:4200
-npm run test:ci    # run library + demo unit tests
-npm run build:lib  # build the library into dist/ngx-kerusi-seatmap
+npm run test:ci    # run core + library + demo unit tests
+npm run build:core # build @kerusiweb/core into projects/core/dist
+npm run build:lib  # build core, then the library into dist/ngx-kerusi-seatmap
 ```
+
+The Angular library resolves `@kerusiweb/core` through the npm workspace, so
+core must be built before the library — `build:lib` chains them for you.
 
 ## Publishing
 
 Releases are cut manually (CI never publishes to npm):
 
-1. Bump `version` in `projects/ngx-kerusi-seatmap/package.json` and add a `CHANGELOG.md` entry.
-2. `npm run build:lib`
-3. `cd dist/ngx-kerusi-seatmap && npm publish --access public` (add `--dry-run` first to inspect contents).
-4. `git tag vX.Y.Z && git push --tags`, then cut a GitHub Release from the tag.
+1. Bump `version` in `projects/core/package.json` and `projects/ngx-kerusi-seatmap/package.json`
+   (keep them in step, and update the `@kerusiweb/core` peer range) and add a `CHANGELOG.md` entry.
+2. `npm run build:lib` (builds core first).
+3. `npm publish --workspace @kerusiweb/core --access public` — core must go out first,
+   since the library declares it as a peer.
+4. `cd dist/ngx-kerusi-seatmap && npm publish --access public` (add `--dry-run` first to inspect contents).
+5. `git tag vX.Y.Z && git push --tags`, then cut a GitHub Release from the tag.
 
 ## History
 

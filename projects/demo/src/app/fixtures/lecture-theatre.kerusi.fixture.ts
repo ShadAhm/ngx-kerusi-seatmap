@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiState, Seat } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiState, Seat } from '@kerusiweb/core';
 
 /**
  * An end-stage lecture theatre in `freeform` mode: rows are concentric arcs
@@ -136,7 +136,15 @@ export const LECTURE_THEATRE_MAP: KerusiMap = {
         { id: 'F', label: 'F', index: 5 },
       ],
       elements: [
-        { id: 'screen', kind: 'screen', label: 'PROJECTION SCREEN', x: 50, y: 2, width: 40, height: 4 },
+        {
+          id: 'screen',
+          kind: 'screen',
+          label: 'PROJECTION SCREEN',
+          x: 50,
+          y: 2,
+          width: 40,
+          height: 4,
+        },
         { id: 'exit-left', kind: 'exit', label: 'EXIT', x: 9, y: 46, width: 7, height: 4 },
         { id: 'exit-right', kind: 'exit', label: 'EXIT', x: 91, y: 46, width: 7, height: 4 },
       ],

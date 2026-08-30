@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiSession, KerusiState, Seat } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiSession, KerusiState, Seat } from '@kerusiweb/core';
 
 /**
  * Two carriages of an intercity train, each its own `Section`.

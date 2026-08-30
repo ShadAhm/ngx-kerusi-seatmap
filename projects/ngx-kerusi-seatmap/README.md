@@ -4,11 +4,16 @@ An Angular seat map that renders [Kerusi](https://github.com/ShadAhm/kerusi)
 documents as interactive, accessible inline SVG.
 
 ```bash
-npm install ngx-kerusi-seatmap
+npm install @kerusiweb/core ngx-kerusi-seatmap
 ```
 
-Requires Angular 22+. Standalone, signal-based, zoneless-friendly, no runtime
-dependencies beyond `tslib`.
+Requires Angular 22+. Standalone, signal-based, zoneless-friendly.
+
+This package is the Angular binding only — the components and the signal-backed
+`KerusiStateStore`. The document types, the conformance validator, the render
+model and its geometry live in its peer
+[`@kerusiweb/core`](https://www.npmjs.com/package/@kerusiweb/core), which is
+framework-free; import them from there.
 
 ---
 
@@ -273,8 +278,8 @@ colour, because shape is the cue the map uses for status.
 
 ## Working with the format directly
 
-Everything under `kerusi/` and `render/` is pure — no Angular import — so it can
-run in a test, a build step or on a server.
+All of this lives in `@kerusiweb/core` and is pure — no Angular import — so it
+can run in a test, a build step or on a server.
 
 ```ts
 import {
@@ -288,7 +293,7 @@ import {
   summarizeSelection, // seats, total, unpriced count
   computeSectionLayout, // placed geometry for one section
   buildNavigationGraph, // per-seat keyboard neighbours
-} from 'ngx-kerusi-seatmap';
+} from '@kerusiweb/core';
 ```
 
 ### Validation

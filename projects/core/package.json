@@ -1,0 +1,42 @@
+{
+  "name": "@kerusiweb/core",
+  "version": "1.1.0",
+  "description": "Framework-agnostic core for the Kerusi Seat Map & Availability Format: document types, a conformance validator, and the render model and geometry a seat-map renderer consumes.",
+  "keywords": [
+    "kerusi",
+    "seat-map",
+    "seatmap",
+    "seat-picker",
+    "seat-selection",
+    "booking",
+    "ticketing",
+    "cinema",
+    "airline",
+    "venue"
+  ],
+  "license": "MIT",
+  "author": "Arshad Ahmad",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShadAhm/ngx-kerusi-seatmap.git",
+    "directory": "projects/core"
+  },
+  "homepage": "https://github.com/ShadAhm/ngx-kerusi-seatmap",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/public-api.d.ts",
+      "default": "./dist/public-api.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/public-api.d.ts",
+  "main": "./dist/public-api.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

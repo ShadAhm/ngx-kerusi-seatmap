@@ -1,17 +1,23 @@
 {
   "name": "ngx-kerusi-seatmap-ws",
   "version": "0.0.0",
+  "workspaces": [
+    "projects/core",
+    "projects/ngx-kerusi-seatmap"
+  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve demo",
     "build": "ng build",
-    "build:lib": "ng build ngx-kerusi-seatmap",
+    "build:core": "tsc -p projects/core/tsconfig.json",
+    "build:lib": "npm run build:core && ng build ngx-kerusi-seatmap",
     "build:demo": "ng build demo",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:core": "vitest run --root projects/core",
     "test:lib": "ng test ngx-kerusi-seatmap --watch=false",
     "test:demo": "ng test demo --watch=false",
-    "test:ci": "npm run test:lib && npm run test:demo"
+    "test:ci": "npm run test:core && npm run test:lib && npm run test:demo"
   },
   "private": true,
   "packageManager": "npm@11.16.0",

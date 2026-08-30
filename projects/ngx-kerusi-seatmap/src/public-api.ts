@@ -1,12 +1,12 @@
 /*
  * Public API Surface of ngx-kerusi-seatmap
+ *
+ * The Angular binding only. Document types, the render model and the view
+ * helpers live in @kerusiweb/core — import them from there.
  */
-
-// --- Kerusi format: document types, validation, pricing, locale, state ------
-export * from './lib/kerusi';
-
-// --- Render model: the resolved, framework-free view a renderer consumes ----
-export * from './lib/render';
 
 // --- Components -------------------------------------------------------------
 export * from './lib/kerusi-seatmap';
+
+// --- Signal-backed live availability store ---------------------------------
+export * from './lib/kerusi-state-store';

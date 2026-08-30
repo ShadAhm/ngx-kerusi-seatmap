@@ -13,7 +13,8 @@ something on screen. See the standard for the normative rules.
 
 ```ts
 import { Component } from '@angular/core';
-import { KerusiSeatmapComponent, type KerusiMap, type KerusiState } from 'ngx-kerusi-seatmap';
+import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
+import type { KerusiMap, KerusiState } from '@kerusiweb/core';
 
 const map: KerusiMap = {
   kerusi: '1.0',
@@ -113,7 +114,7 @@ all-`x`-and-`y`-no-`col` is `freeform`. Anything else is rejected — there is n
 inference for `mixed`, so a seat carrying all three must say so.
 
 ```ts
-import { checkKerusiMap } from 'ngx-kerusi-seatmap';
+import { checkKerusiMap } from '@kerusiweb/core';
 
 checkKerusiMap(map);
 // [{ rule: 'section-layout-grid', severity: 'error',
@@ -229,7 +230,7 @@ minor units, and `formatMoney` reads the currency's exponent rather than
 assuming two digits — so JPY and KWD come out right.
 
 ```ts
-import { summarizeSelection, formatMoney, buildRenderModel } from 'ngx-kerusi-seatmap';
+import { summarizeSelection, formatMoney, buildRenderModel } from '@kerusiweb/core';
 
 const model = buildRenderModel(map, state);
 const { seats, total, unpriced } = summarizeSelection(model, selection());

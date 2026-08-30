@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiSession, KerusiState } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiSession, KerusiState } from '@kerusiweb/core';
 
 /**
  * A cinema hall in `grid` mode: straight rows split by two aisles into a

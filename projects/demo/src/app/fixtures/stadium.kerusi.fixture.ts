@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiState, Seat } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiState, Seat } from '@kerusiweb/core';
 
 /**
  * A stadium bowl in `mixed` mode — the only mode in which a seat may carry both

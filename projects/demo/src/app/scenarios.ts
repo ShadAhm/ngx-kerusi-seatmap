@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiSession, KerusiState } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiSession, KerusiState } from '@kerusiweb/core';
 import { AIRCRAFT_MAP, AIRCRAFT_SESSION, AIRCRAFT_STATE } from './fixtures/aircraft.kerusi.fixture';
 import { CINEMA_MAP, CINEMA_SESSION, CINEMA_STATE } from './fixtures/cinema.kerusi.fixture';
 import {

@@ -19,7 +19,7 @@ and ignores unrecognized members.
 
 Each claim above is asserted file by file against the corpus published with the
 standard, vendored under
-`projects/ngx-kerusi-seatmap/src/lib/kerusi/conformance/` — including the five
+`projects/core/src/kerusi/conformance/` — including the five
 schema-invalid fixtures this library accepts on purpose, which that folder's
 README explains.
 

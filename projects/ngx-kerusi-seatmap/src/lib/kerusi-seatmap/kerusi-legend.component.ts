@@ -1,23 +1,21 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { formatMoney } from '../kerusi/kerusi-locale';
-import { RenderLegendEntry } from '../render/render-model';
-import {
-  seatBodyPath,
-  seatOccupantPath,
-  seatOccupantStroke,
-  seatSelectedFrame,
-} from '../render/seat-shapes';
 import {
   cssVar,
   DEFAULT_KERUSI_COLORS,
+  formatMoney,
   KerusiSeatmapColors,
   occupantFillFor,
   occupantStrokeFor,
   readableOn,
+  RenderLegendEntry,
+  seatBodyPath,
   SeatOccupantVariant,
   seatCoreFill,
+  seatOccupantPath,
+  seatOccupantStroke,
+  seatSelectedFrame,
   seatWashFill,
-} from './kerusi-seatmap-colors';
+} from '@kerusiweb/core';
 
 /** Which marks, beyond the body fill, a status swatch draws. */
 type StatusKind = 'plain' | 'blocked' | SeatOccupantVariant;
@@ -115,7 +113,13 @@ export class KerusiLegendComponent {
   /** The selected swatch's frame width, and the core it leaves inside itself. */
   private readonly glyphFrame = seatSelectedFrame(this.glyphSize, this.glyphSize);
   private readonly glyphCoreSize = this.glyphSize - this.glyphFrame * 2;
-  protected readonly glyphCore = seatBodyPath(0, 0, this.glyphSize, this.glyphSize, this.glyphFrame);
+  protected readonly glyphCore = seatBodyPath(
+    0,
+    0,
+    this.glyphSize,
+    this.glyphSize,
+    this.glyphFrame,
+  );
 
   protected readonly glyphOccupant = seatOccupantPath(0, 0, this.glyphSize, this.glyphSize);
   protected readonly glyphOccupantStroke = seatOccupantStroke(this.glyphSize, this.glyphSize);
