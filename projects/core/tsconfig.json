@@ -1,0 +1,21 @@
+/* Build config for @kerusiweb/core — pure TypeScript, no framework. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  /* Test-only material: the vendored conformance corpus and the example
+     documents the specs are written against. Type-checked by
+     tsconfig.spec.json, never shipped. */
+  "exclude": ["**/*.spec.ts", "src/kerusi/conformance/**", "src/kerusi/kerusi-examples.fixture.ts"]
+}

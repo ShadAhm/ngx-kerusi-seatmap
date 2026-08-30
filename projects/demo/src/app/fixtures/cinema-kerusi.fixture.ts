@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiState, Seat } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiState, Seat } from '@kerusiweb/core';
 
 // An "everything" cinema expressed in the Kerusi Seat Map & Availability
 // Format. It exercises the capabilities the plain grid demo cannot show:

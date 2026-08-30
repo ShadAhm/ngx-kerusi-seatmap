@@ -4,6 +4,45 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+1. **The framework-agnostic core is now its own package, `@kerusiweb/core`.**
+   The Kerusi document types, the conformance validator, the price/locale/row
+   resolution, the render model and its geometry, and the colour, ARIA and
+   selection helpers all moved out of the Angular library into
+   `projects/core/`. `ngx-kerusi-seatmap` is now the Angular binding alone —
+   three components and the signal-backed `KerusiStateStore` — and declares
+   `@kerusiweb/core` as a peer dependency.
+
+   The split was mostly already there: only four files imported `@angular/core`
+   and none imported RxJS. The one genuinely mixed file was
+   `kerusi-state-store.ts`, whose pure delta-ordering and hold-expiry functions
+   are now `@kerusiweb/core`'s `kerusi-state`, with the signal wrapper left
+   behind in the Angular package. No logic changed. See
+   [docs/architecture.md](docs/architecture.md) for what belongs where.
+
+   Core compiles under `strict` with no framework, no DOM and no `any`, tests
+   under plain Vitest, and — because it is `"type": "module"` with explicit
+   import extensions — loads in Node ESM without a bundler, so validation can
+   run server-side or in a build step.
+
+### Breaking
+
+- **Install both packages:** `npm install @kerusiweb/core ngx-kerusi-seatmap`.
+- **Imports move.** Everything except `KerusiSeatmapComponent`,
+  `KerusiSectionComponent`, `KerusiLegendComponent`, `KerusiStateStore` and the
+  component I/O types (`SeatDisallowed`, `SeatInteraction`,
+  `SectionRenderOptions`, `ValidationMode`) now comes from `@kerusiweb/core`:
+
+  ```ts
+  import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
+  import type { KerusiMap, KerusiState } from '@kerusiweb/core';
+  ```
+
+  No symbol was renamed, removed or changed in behaviour — only its package.
+
 ## [1.1.0] - 2026-08-29
 
 Brings the library up to **rev 13** of the Kerusi standard. The conformance

@@ -10,26 +10,39 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { KerusiMap, Money } from '../kerusi/kerusi-map.model';
-import { KerusiSession, KerusiState } from '../kerusi/kerusi-state.model';
-import { formatMoney, resolveMapLocale } from '../kerusi/kerusi-locale';
-import { expireHolds } from '../kerusi/kerusi-state-store';
-import { KerusiViolation } from '../kerusi/kerusi-violation';
-import { errorsOf, KerusiValidationError, validateDocumentSet } from '../kerusi/kerusi-validator';
-import { buildRenderModel } from '../render/build-render-model';
-import { RenderMap, RenderSeat, RenderSection, SeatRenderStatus } from '../render/render-model';
-import { buildNavigationGraph, NavigationGraph } from '../render/navigation-order';
-import { computeSectionLayout, SectionLayout } from '../render/section-layout';
-import { KerusiSectionComponent } from './kerusi-section.component';
-import { KerusiLegendComponent } from './kerusi-legend.component';
-import { DEFAULT_KERUSI_COLORS, KerusiSeatmapColors } from './kerusi-seatmap-colors';
 import {
+  buildNavigationGraph,
+  buildRenderModel,
+  computeSectionLayout,
+  DEFAULT_KERUSI_COLORS,
   DEFAULT_SEAT_ARIA_STRINGS,
+  DisallowedReason,
   disallowedAnnouncement,
+  errorsOf,
+  expireHolds,
+  formatMoney,
+  KerusiMap,
+  KerusiSeatmapColors,
+  KerusiSession,
+  KerusiState,
+  KerusiValidationError,
+  KerusiViolation,
+  Money,
+  NavigationGraph,
+  RenderMap,
+  RenderSeat,
+  RenderSection,
+  resolveMapLocale,
   SeatAriaStrings,
   seatAriaLabel,
-} from './seat-aria';
-import { DisallowedReason, summarizeSelection, toggleSeatSelection } from './selection';
+  SeatRenderStatus,
+  SectionLayout,
+  summarizeSelection,
+  toggleSeatSelection,
+  validateDocumentSet,
+} from '@kerusiweb/core';
+import { KerusiSectionComponent } from './kerusi-section.component';
+import { KerusiLegendComponent } from './kerusi-legend.component';
 
 /** How a document with validation errors is handled. */
 export type ValidationMode =

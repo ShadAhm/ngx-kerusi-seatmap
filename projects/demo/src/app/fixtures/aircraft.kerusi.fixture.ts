@@ -1,4 +1,4 @@
-import { KerusiMap, KerusiSession, KerusiState, Seat } from 'ngx-kerusi-seatmap';
+import { KerusiMap, KerusiSession, KerusiState, Seat } from '@kerusiweb/core';
 
 /**
  * A narrow-body cabin in `grid` mode: two classes as separate sections, an

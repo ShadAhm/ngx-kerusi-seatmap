@@ -25,7 +25,8 @@
   "homepage": "https://github.com/ShadAhm/ngx-kerusi-seatmap",
   "peerDependencies": {
     "@angular/common": "^22.1.0",
-    "@angular/core": "^22.1.0"
+    "@angular/core": "^22.1.0",
+    "@kerusiweb/core": "^1.1.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

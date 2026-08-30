@@ -1,28 +1,29 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { elementStyle, screenPath } from '../render/element-shapes';
-import {
-  seatBodyPath,
-  seatOccupantPath,
-  seatOccupantStroke,
-  seatSelectedFrame,
-} from '../render/seat-shapes';
-import { PlacedElement, PlacedSeat, SectionLayout } from '../render/section-layout';
-import { RenderSection } from '../render/render-model';
 import {
   cssVar,
   DEFAULT_KERUSI_COLORS,
   elementFill,
+  elementStyle,
   elementTextFill,
   KerusiSeatmapColors,
   occupantFillFor,
   occupantStrokeFor,
+  PlacedElement,
+  PlacedSeat,
+  RenderSection,
+  screenPath,
+  seatBodyPath,
   SeatOccupantVariant,
   seatCoreFill,
   seatFill,
+  seatOccupantPath,
+  seatOccupantStroke,
   seatOccupantVariant,
+  seatSelectedFrame,
   seatTextFill,
   seatWashFill,
-} from './kerusi-seatmap-colors';
+  SectionLayout,
+} from '@kerusiweb/core';
 
 /**
  * Draws one Kerusi `Section` as a single `<svg>`.

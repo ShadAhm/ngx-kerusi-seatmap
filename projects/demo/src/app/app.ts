@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import {
-  formatMoney,
-  KerusiSeatmapComponent,
-  KerusiViolation,
-  SeatDisallowed,
-  summarizeSelection,
   buildRenderModel,
-} from 'ngx-kerusi-seatmap';
+  formatMoney,
+  KerusiViolation,
+  summarizeSelection,
+} from '@kerusiweb/core';
+import { KerusiSeatmapComponent, SeatDisallowed } from 'ngx-kerusi-seatmap';
 import { DEMO_LOCALES, Scenario, SCENARIOS } from './scenarios';
 
 const THEME_STORAGE_KEY = 'kerusi-demo-theme';

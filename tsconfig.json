@@ -7,6 +7,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "paths": {
+      "@kerusiweb/core": ["./projects/core/src/public-api.ts"],
       "ngx-kerusi-seatmap": ["./projects/ngx-kerusi-seatmap/src/public-api.ts"]
     },
     "noFallthroughCasesInSwitch": true,
@@ -24,6 +25,9 @@
   },
   "files": [],
   "references": [
+    {
+      "path": "./projects/core/tsconfig.json"
+    },
     {
       "path": "./projects/ngx-kerusi-seatmap/tsconfig.lib.json"
     },

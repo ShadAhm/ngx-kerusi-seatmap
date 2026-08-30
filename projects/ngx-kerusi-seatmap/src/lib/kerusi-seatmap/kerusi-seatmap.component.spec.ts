@@ -1,9 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { KerusiMap } from '../kerusi/kerusi-map.model';
-import { KerusiState } from '../kerusi/kerusi-state.model';
-import { KerusiViolation } from '../kerusi/kerusi-violation';
+import { KerusiMap, KerusiState, KerusiViolation } from '@kerusiweb/core';
 import { KerusiSeatmapComponent, SeatDisallowed } from './kerusi-seatmap.component';
 
 /** Two sections in different layout modes, plus a companion pair. */

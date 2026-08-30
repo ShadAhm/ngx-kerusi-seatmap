@@ -6,7 +6,7 @@ import {
   KerusiSession,
   KerusiState,
   validateDocumentSet,
-} from 'ngx-kerusi-seatmap';
+} from '@kerusiweb/core';
 import { AIRCRAFT_MAP, AIRCRAFT_SESSION, AIRCRAFT_STATE } from './aircraft.kerusi.fixture';
 import { CINEMA_MAP, CINEMA_SESSION, CINEMA_STATE } from './cinema.kerusi.fixture';
 import { LECTURE_THEATRE_MAP, LECTURE_THEATRE_STATE } from './lecture-theatre.kerusi.fixture';
