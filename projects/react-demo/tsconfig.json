@@ -1,0 +1,14 @@
+/* The React demo runs against source, not the built packages. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "noEmit": true,
+    "types": ["vite/client", "react", "react-dom"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

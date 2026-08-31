@@ -7,11 +7,26 @@ import {
   KerusiState,
   validateDocumentSet,
 } from '@kerusiweb/core';
-import { AIRCRAFT_MAP, AIRCRAFT_SESSION, AIRCRAFT_STATE } from './aircraft.kerusi.fixture';
-import { CINEMA_MAP, CINEMA_SESSION, CINEMA_STATE } from './cinema.kerusi.fixture';
-import { LECTURE_THEATRE_MAP, LECTURE_THEATRE_STATE } from './lecture-theatre.kerusi.fixture';
-import { STADIUM_MAP, STADIUM_STATE } from './stadium.kerusi.fixture';
-import { TRAIN_MAP, TRAIN_SESSION, TRAIN_STATE } from './train.kerusi.fixture';
+import {
+  AIRCRAFT_MAP,
+  AIRCRAFT_SESSION,
+  AIRCRAFT_STATE,
+} from '@kerusi/demo-scenarios/fixtures/aircraft.kerusi.fixture';
+import {
+  CINEMA_MAP,
+  CINEMA_SESSION,
+  CINEMA_STATE,
+} from '@kerusi/demo-scenarios/fixtures/cinema.kerusi.fixture';
+import {
+  LECTURE_THEATRE_MAP,
+  LECTURE_THEATRE_STATE,
+} from '@kerusi/demo-scenarios/fixtures/lecture-theatre.kerusi.fixture';
+import { STADIUM_MAP, STADIUM_STATE } from '@kerusi/demo-scenarios/fixtures/stadium.kerusi.fixture';
+import {
+  TRAIN_MAP,
+  TRAIN_SESSION,
+  TRAIN_STATE,
+} from '@kerusi/demo-scenarios/fixtures/train.kerusi.fixture';
 
 /**
  * The demo showcases these documents as examples of the standard, so they had

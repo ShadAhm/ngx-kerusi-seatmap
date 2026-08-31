@@ -1,0 +1,474 @@
+/* Ported from the Angular demo's app.css. The only change is `:host`,
+   which has no React equivalent, becoming the `.app` root class. */
+.app {
+  display: block;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.55;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.app[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1218;
+  --panel: #171c25;
+  --panel-2: #1e242f;
+  --line: #2a3140;
+  --ink: #e8ecf3;
+  --ink-dim: #9aa4b5;
+  --accent: #7ea9ff;
+  --accent-ink: #0d1422;
+  --ok: #6fd58f;
+  --warn: #ffb454;
+  --err: #ff7d8a;
+  --code-bg: #0b0e14;
+}
+
+.app[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-2: #eef1f6;
+  --line: #d7dee8;
+  --ink: #1a2130;
+  --ink-dim: #5b6472;
+  --accent: #2f5da8;
+  --accent-ink: #ffffff;
+  --ok: #1f8a4c;
+  --warn: #b5690b;
+  --err: #c23b46;
+  --code-bg: #eef1f6;
+}
+
+a {
+  color: var(--accent);
+}
+
+code {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.92em;
+}
+
+/* --- header ------------------------------------------------------------- */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2.5rem 1.5rem 1.5rem;
+  max-width: 78rem;
+  margin: 0 auto;
+}
+
+.site-header h1 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.site-header p {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--ink-dim);
+}
+
+.theme-toggle {
+  flex: none;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+main {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+/* --- scenario tabs ------------------------------------------------------- */
+
+.scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.scenario-tab {
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink-dim);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.scenario-tab:hover {
+  color: var(--ink);
+}
+
+.scenario-tab--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.scenario-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- scenario ------------------------------------------------------------ */
+
+.scenario {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.scenario-intro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.scenario-intro h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.25rem;
+}
+
+.hint {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--ink-dim);
+  font-size: 0.92rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+.controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.controls select {
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+  font: inherit;
+}
+
+.scenario-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 60rem) {
+  .scenario-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stage {
+  min-width: 0;
+  /* A section wider than the viewport scrolls inside its own box rather than
+     pushing the page sideways. */
+  overflow-x: auto;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.keyboard-hint {
+  margin: 1rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-dim);
+}
+
+/* --- panel --------------------------------------------------------------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+}
+
+.card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.muted {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
+.ok {
+  margin: 0;
+  color: var(--ok);
+  font-size: 0.85rem;
+}
+
+.warn {
+  margin: 0.6rem 0 0;
+  color: var(--warn);
+  font-size: 0.85rem;
+}
+
+.seat-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.seat-list li {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr auto auto;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.seat-list__id {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.seat-list__type {
+  color: var(--ink-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-list__price {
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  color: var(--accent);
+}
+
+.total {
+  margin: 0.7rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.highlights {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.83rem;
+  color: var(--ink-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sections-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.sections-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-dim);
+  padding-bottom: 0.3rem;
+}
+
+.sections-table td {
+  padding: 0.2rem 0.4rem 0.2rem 0;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.issues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.issue--error code {
+  color: var(--err);
+}
+
+.issue--warning code {
+  color: var(--warn);
+}
+
+/* --- source ------------------------------------------------------------- */
+
+.source {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.source summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+.source pre {
+  margin: 0.8rem 0 0;
+  max-height: 26rem;
+  overflow: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  font-size: 0.78rem;
+}
+
+/* --- footer -------------------------------------------------------------- */
+
+.site-footer {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+}
+
+/* --- theming the seat map ------------------------------------------------ */
+
+/* The library ships a palette tuned for a light page, so the light theme
+   below overrides only one thing — see below — and otherwise falls through
+   to the library's own defaults. The dark theme needs a full explicit
+   retheme, though — none of this touches the component's inputs — every
+   value below is a CSS custom property the library reads through
+   `var(--kerusi-*, <input value>)`, so a stylesheet is all it takes. */
+
+/* The library's default muted-element fill (`#eef1f6`) happens to be the
+   exact same hex as this theme's `--panel-2`, which is what the seatmap's
+   own `.stage` container is painted — so a lavatory/pitch/aisle fixture was
+   rendering pixel-identical to its own card, i.e. invisible. One shade
+   darker keeps it reading as "muted" without calling attention to it. */
+.app[data-theme='light'] .kerusi-seatmap {
+  --kerusi-element-muted-bg: #dde3ec;
+}
+
+.app[data-theme='dark'] .kerusi-seatmap {
+  --kerusi-available-bg: #2f6b45;
+  --kerusi-available-fg: #d7f5e2;
+  /* The one status that still owns its colour outright — and the only one drawn
+     from two tones: `-bg` frames the seat, `-fg` fills the core inside it and is
+     what the number is read against, so the pair needs real contrast with each
+     other rather than just with the page. */
+  --kerusi-selected-bg: #7a5bc8;
+  --kerusi-selected-fg: #f8f4ff;
+  /* held/booked no longer change the seat's own colour — a seat keeps its
+     type colour under a *Bg wash, with *Fg tinting the occupant figure that
+     marks it. */
+  --kerusi-held-bg: #7a5410;
+  --kerusi-held-fg: #ffe1a8;
+  --kerusi-booked-bg: #6b2731;
+  --kerusi-booked-fg: #ffc9d0;
+  --kerusi-blocked-bg: #2c323d;
+  --kerusi-blocked-fg: #808a9b;
+
+  --kerusi-element-bg: #232a36;
+  --kerusi-element-fg: #aab4c6;
+  --kerusi-element-accent-bg: #2f5da8;
+  --kerusi-element-accent-fg: #e8f0ff;
+  --kerusi-element-muted-bg: #1a202a;
+  --kerusi-element-muted-fg: #6f7a8c;
+
+  --kerusi-focus-ring: #ffffff;
+}

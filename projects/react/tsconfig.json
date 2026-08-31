@@ -1,0 +1,24 @@
+/* Build config for @kerusiweb/react — plain tsc, no bundler, same as core. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "types": ["react"],
+    /* Resolve @kerusiweb/core through node_modules (the workspace symlink to
+       projects/core) rather than the root source alias, so the emitted
+       declarations reference the published package and core is never compiled
+       into this one. */
+    "paths": {}
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["**/*.spec.ts", "**/*.spec.tsx", "src/test-setup.ts"]
+}

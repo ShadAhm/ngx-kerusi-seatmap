@@ -92,6 +92,17 @@ export const DEFAULT_KERUSI_COLORS: Required<KerusiSeatmapColors> = {
 };
 
 /**
+ * Fills the gaps in a partial palette with the library defaults.
+ *
+ * Every paint function below takes a `Required<KerusiSeatmapColors>`, and a
+ * binding's `colors` input is partial, so each one would otherwise open with
+ * the same spread. One merge, defined once.
+ */
+export function resolveColors(colors?: KerusiSeatmapColors): Required<KerusiSeatmapColors> {
+  return { ...DEFAULT_KERUSI_COLORS, ...colors };
+}
+
+/**
  * A palette value as a CSS custom property, with the resolved `[colors]` value
  * as its fallback.
  *

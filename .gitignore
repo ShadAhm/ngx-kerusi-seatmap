@@ -44,5 +44,6 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-# Build output of @kerusiweb/core
+# Build output of the published packages
 /projects/core/dist
+/projects/react/dist

@@ -1,0 +1,230 @@
+/*
+ * @kerusiweb/react — the one stylesheet the package ships.
+ *
+ *   import '@kerusiweb/react/styles.css';
+ *
+ * It owns layout, opacity, cursor, paint order and the focus ring, and nothing
+ * else. Every colour is bound inline by the components instead, because a
+ * `var(--kerusi-selected-bg, …)` written here would carry the *library* default
+ * as its fallback and silently skip the `colors` prop tier — only the
+ * TypeScript side can resolve that one. See `cssVar()` in @kerusiweb/core for
+ * the three tiers and their precedence.
+ */
+
+/* --- the map ------------------------------------------------------------- */
+
+.kerusi-seatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.kerusi-seatmap__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.kerusi-section-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+/* Visually hidden, still announced. */
+.kerusi-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- a section ----------------------------------------------------------- */
+
+/* The viewBox carries the proportions; CSS only decides how wide it gets. */
+.kerusi-section-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.kerusi-seat {
+  cursor: pointer;
+  outline: none;
+}
+
+.kerusi-seat--unselectable {
+  cursor: not-allowed;
+}
+
+.kerusi-seat__label,
+.kerusi-element__label {
+  pointer-events: none;
+  user-select: none;
+  font-family: inherit;
+}
+
+/* A selected seat's number is stroked with the core colour and painted stroke
+   first, so the halo sits behind the glyphs and knocks the occupant figure out
+   from under them. Only the ordering lives here: the colour and width are bound
+   inline, for the reason at the top of this file. */
+.kerusi-seat__label {
+  paint-order: stroke;
+  stroke-linejoin: round;
+}
+
+/* No `transition: fill` here, deliberately. Every fill is a
+   `var(--kerusi-*, …)` substitution, and Chromium cannot transition a paint
+   property to a variable-derived value — the transition never advances and the
+   seat keeps its previous color for good, so a selected seat would never turn
+   selected. That covers the core's fill and the label's halo stroke too.
+   Correct color beats a 120ms fade. */
+
+/* Drawn over the seat's own type-colour fill, so a held or booked seat still
+   recedes even though its hue no longer changes. Fill colour is bound inline;
+   opacity is the only thing this rule owns. */
+.kerusi-seat__wash {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* The bright plate inside a selected seat's frame. Colour is bound inline;
+   this rule only keeps it out of hit-testing, so a click still lands on the
+   seat group. */
+.kerusi-seat__core {
+  pointer-events: none;
+}
+
+/* Fill/stroke colour is bound inline per variant; these rules only set the
+   weight each variant reads at. Solid = settled (yours, or sold); hollow = a
+   hold still in progress. */
+.kerusi-seat__occupant {
+  pointer-events: none;
+}
+
+/* Lighter than the other variants: this one is a dark mark on a bright plate,
+   and a dark mark reads heavier than a light one at the same opacity. Kept as
+   texture so it does not compete with the number sitting on top of it. */
+.kerusi-seat__occupant--selected {
+  opacity: 0.2;
+}
+
+.kerusi-seat__occupant--booked {
+  opacity: 0.55;
+}
+
+.kerusi-seat__occupant--held {
+  opacity: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The number competes with the silhouette behind it. */
+.kerusi-seat--selected .kerusi-seat__label {
+  font-weight: 600;
+}
+
+/* The focus ring is drawn on the seat box so it follows a rotated seat. It is
+   a separate mark from the selected frame — it strokes the outermost path, so a
+   focused selected seat shows both.
+
+   Two levels of fallback, so this token keeps the same precedence as every
+   other one: a `--kerusi-focus-ring` from the consumer's stylesheet wins;
+   otherwise `--kerusi-focus-ring-input`, which the component writes on the
+   `<svg>` from the `colors` prop; otherwise the inherited text color. */
+.kerusi-seat:focus-visible .kerusi-seat__box {
+  stroke: var(--kerusi-focus-ring, var(--kerusi-focus-ring-input, currentColor));
+  stroke-width: 2.5;
+  paint-order: stroke;
+}
+
+.kerusi-element__void {
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  opacity: 0.7;
+}
+
+/* --- the legend ---------------------------------------------------------- */
+
+.kerusi-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.kerusi-legend__block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.kerusi-legend__heading {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.kerusi-legend__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kerusi-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.kerusi-legend__swatch {
+  display: inline-block;
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 3px;
+}
+
+/* The seat glyph carries its own corner radius in the viewBox. */
+.kerusi-legend__swatch--glyph {
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* Mirrors `.kerusi-seat__occupant--*` on the map, so the key matches what it
+   is keying. Fill/stroke colour is bound inline; these set the weight. */
+.kerusi-legend__occupant--selected {
+  opacity: 0.2;
+}
+
+.kerusi-legend__occupant--booked {
+  opacity: 0.55;
+}
+
+.kerusi-legend__occupant--held {
+  opacity: 0.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.kerusi-legend__price {
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}

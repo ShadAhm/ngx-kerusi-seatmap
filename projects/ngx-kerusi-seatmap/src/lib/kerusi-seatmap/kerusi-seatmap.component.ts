@@ -14,13 +14,13 @@ import {
   buildNavigationGraph,
   buildRenderModel,
   computeSectionLayout,
-  DEFAULT_KERUSI_COLORS,
   DEFAULT_SEAT_ARIA_STRINGS,
   DisallowedReason,
   disallowedAnnouncement,
   errorsOf,
   expireHolds,
   formatMoney,
+  isRtlLocale,
   KerusiMap,
   KerusiSeatmapColors,
   KerusiSession,
@@ -32,6 +32,7 @@ import {
   RenderMap,
   RenderSeat,
   RenderSection,
+  resolveColors,
   resolveMapLocale,
   SeatAriaStrings,
   seatAriaLabel,
@@ -279,10 +280,9 @@ export class KerusiSeatmapComponent {
     this.rtl() === 'auto' ? isRtlLocale(this.resolvedLocale()) : this.rtl() === true,
   );
 
-  protected readonly resolvedColors = computed<Required<KerusiSeatmapColors>>(() => ({
-    ...DEFAULT_KERUSI_COLORS,
-    ...this.colors(),
-  }));
+  protected readonly resolvedColors = computed<Required<KerusiSeatmapColors>>(() =>
+    resolveColors(this.colors()),
+  );
 
   protected readonly selectionSet = computed(() => new Set(this.selection()));
 
@@ -527,11 +527,4 @@ export class KerusiSeatmapComponent {
 
 function formatTotal(total: Money | undefined, locale: string): string {
   return total ? formatMoney(total, locale) : '';
-}
-
-/** BCP-47 language subtags written right-to-left. */
-const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur', 'ps', 'dv', 'yi', 'ku', 'sd']);
-
-function isRtlLocale(locale: string): boolean {
-  return RTL_LANGUAGES.has(locale.toLowerCase().split('-')[0]);
 }

@@ -1,0 +1,6 @@
+{
+  "name": "kerusi-react-demo",
+  "private": true,
+  "type": "module",
+  "description": "Not a workspace member — this file exists so vite.config.ts is read as ESM."
+}

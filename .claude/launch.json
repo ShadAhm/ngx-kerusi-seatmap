@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["ng", "serve", "demo", "--port", "4310"],
       "port": 4310
+    },
+    {
+      "name": "react-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:react", "--", "--port", "4300", "--strictPort"],
+      "port": 4300
     }
   ]
 }

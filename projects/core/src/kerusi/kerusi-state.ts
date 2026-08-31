@@ -161,3 +161,25 @@ export interface HeldSeat {
   /** Milliseconds until expiry; negative once lapsed. */
   msRemaining: number;
 }
+
+/**
+ * Every currently-held seat, soonest to expire first.
+ *
+ * A binding renders these as countdowns; the arithmetic is the same wherever
+ * it runs, so it lives here rather than in each store. Seats held without a
+ * `holdExpires` are omitted — there is no countdown to show.
+ */
+export function heldSeats(
+  state: KerusiState,
+  now: string | Date = new Date(),
+): readonly HeldSeat[] {
+  const nowMs = typeof now === 'string' ? Date.parse(now) : now.getTime();
+  return Object.entries(state.seats ?? {})
+    .filter(([, s]) => s.status === 'held' && !!s.holdExpires)
+    .map(([seatId, s]) => ({
+      seatId,
+      expiresAt: s.holdExpires!,
+      msRemaining: Date.parse(s.holdExpires!) - nowMs,
+    }))
+    .sort((a, b) => a.msRemaining - b.msRemaining);
+}

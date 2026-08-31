@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "workspaces": [
     "projects/core",
+    "projects/react",
     "projects/ngx-kerusi-seatmap"
   ],
   "scripts": {
@@ -10,14 +11,18 @@
     "start": "ng serve demo",
     "build": "ng build",
     "build:core": "tsc -p projects/core/tsconfig.json",
+    "build:react": "npm run build:core && tsc -p projects/react/tsconfig.json",
     "build:lib": "npm run build:core && ng build ngx-kerusi-seatmap",
     "build:demo": "ng build demo",
+    "build:react-demo": "vite build --config projects/react-demo/vite.config.ts",
+    "start:react": "vite --config projects/react-demo/vite.config.ts",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:core": "vitest run --root projects/core",
     "test:lib": "ng test ngx-kerusi-seatmap --watch=false",
     "test:demo": "ng test demo --watch=false",
-    "test:ci": "npm run test:core && npm run test:lib && npm run test:demo"
+    "test:react": "vitest run --root projects/react",
+    "test:ci": "npm run test:core && npm run test:lib && npm run test:demo && npm run test:react"
   },
   "private": true,
   "packageManager": "npm@11.16.0",
@@ -35,10 +40,19 @@
     "@angular/build": "^22.1.4",
     "@angular/cli": "^22.1.4",
     "@angular/compiler-cli": "^22.1.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^28.0.0",
     "ng-packagr": "^22.1.0",
     "prettier": "^3.8.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "~6.0.2",
+    "vite": "^8.2.2",
     "vitest": "^4.0.8"
   }
 }
