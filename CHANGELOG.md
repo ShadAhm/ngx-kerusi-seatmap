@@ -6,6 +6,51 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Breaking
+
+1. **The Angular package is renamed** `@kerusiweb/angular` → `@kerusiweb/angular`,
+   joining `@kerusiweb/core` and `@kerusiweb/react` under one scope. The `ngx-`
+   prefix is Angular's convention for _unscoped_ packages, where it exists to
+   signal the framework in npm's flat namespace; a scope plus a framework
+   segment already says the same thing, which is why every current
+   multi-framework family names its bindings this way. No version of either
+   name was ever published to npm, so there is no migration path to document —
+   nothing depends on the old name.
+
+   The import changes accordingly:
+
+   ```ts
+   -import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
+   +import { KerusiSeatmapComponent } from '@kerusiweb/angular';
+   ```
+
+### Changed
+
+1. **The repository is renamed** `@kerusiweb/angular` → `kerusiweb`, and the
+   demos move to `shadahm.github.io/kerusiweb/`. GitHub redirects the old URLs.
+   The repo is no longer an Angular library that grew a React port; it is a
+   seat-map renderer with framework bindings, and the name, the docs and the
+   scripts now say so.
+
+2. **Nothing in the workspace privileges one framework.** `projects/` now reads
+   `core/`, `angular/`, `react/`, `angular-demo/`, `react-demo/`. Every npm
+   script names its framework (`start:angular`, `build:react`, `test:angular`),
+   and the bare `start` / `build` / `test` scripts — all of which meant Angular
+   — are gone. `@angular/*` moved from the workspace root's `dependencies` to
+   its `devDependencies`, alongside `react`, and the root `tsconfig.json` is
+   framework-neutral: `angularCompilerOptions` moved into a new
+   `tsconfig.angular.json` that only the Angular binding and demo extend, so
+   core and the React binding no longer inherit them.
+
+3. **Both demos deploy.** GitHub Pages now serves a landing page linking to the
+   Angular demo at `/angular/` and the React demo at `/react/`, rather than
+   giving the root to Angular alone.
+
+4. **`docs/kerusi.md` is framework-neutral**, and the conformance report is
+   attributed to `@kerusiweb/core`, where the validator actually lives. Added
+   `CONTRIBUTING.md`, issue templates and a PR template, each asking which
+   package a report concerns.
+
 ### Added
 
 1. **A React binding, `@kerusiweb/react`.** Same components, same props, same
@@ -50,7 +95,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
    The Kerusi document types, the conformance validator, the price/locale/row
    resolution, the render model and its geometry, and the colour, ARIA and
    selection helpers all moved out of the Angular library into
-   `projects/core/`. `ngx-kerusi-seatmap` is now the Angular binding alone —
+   `projects/core/`. `@kerusiweb/angular` is now the Angular binding alone —
    three components and the signal-backed `KerusiStateStore` — and declares
    `@kerusiweb/core` as a peer dependency.
 
@@ -68,14 +113,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Breaking
 
-- **Install both packages:** `npm install @kerusiweb/core ngx-kerusi-seatmap`.
+- **Install both packages:** `npm install @kerusiweb/core @kerusiweb/angular`.
 - **Imports move.** Everything except `KerusiSeatmapComponent`,
   `KerusiSectionComponent`, `KerusiLegendComponent`, `KerusiStateStore` and the
   component I/O types (`SeatDisallowed`, `SeatInteraction`,
   `SectionRenderOptions`, `ValidationMode`) now comes from `@kerusiweb/core`:
 
   ```ts
-  import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
+  import { KerusiSeatmapComponent } from '@kerusiweb/angular';
   import type { KerusiMap, KerusiState } from '@kerusiweb/core';
   ```
 
@@ -207,9 +252,9 @@ folded into this release.
 ### Breaking
 
 1. **The package is renamed** `ngx-keruc-seatpicker` → `ngx-kerusi-seatmap`.
-   The repository moved to `github.com/ShadAhm/ngx-kerusi-seatmap` (GitHub
+   The repository moved to `github.com/ShadAhm/kerusiweb` (GitHub
    redirects the old URL), and the demo now lives at
-   `shadahm.github.io/ngx-kerusi-seatmap/`.
+   `shadahm.github.io/kerusiweb/`.
 
 2. **The Angular prefix is `kerusi`, not `keruc`.** `<keruc-seatpicker>` is now
    `<kerusi-seatpicker>`, and the CSS classes `.keruc-seat` / `.keruc-element`
@@ -343,5 +388,5 @@ Carried over from the legacy directive:
 - Rendering is per-instance (no global element id lookup), so multiple pickers
   can coexist on one page.
 
-[1.0.0]: https://github.com/ShadAhm/ngx-kerusi-seatmap/releases/tag/v1.0.0
-[0.1.0]: https://github.com/ShadAhm/ngx-kerusi-seatmap/releases/tag/v0.1.0
+[1.0.0]: https://github.com/ShadAhm/kerusiweb/releases/tag/v1.0.0
+[0.1.0]: https://github.com/ShadAhm/kerusiweb/releases/tag/v0.1.0

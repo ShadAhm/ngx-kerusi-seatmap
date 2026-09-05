@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "demo",
+      "name": "angular-demo",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["ng", "serve", "demo", "--port", "4310"],
+      "runtimeArgs": ["ng", "serve", "angular-demo", "--port", "4310"],
       "port": 4310
     },
     {

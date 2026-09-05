@@ -1,45 +1,39 @@
 {
-  "name": "ngx-kerusi-seatmap-ws",
+  "name": "kerusiweb-ws",
   "version": "0.0.0",
   "workspaces": [
     "projects/core",
-    "projects/react",
-    "projects/ngx-kerusi-seatmap"
+    "projects/angular",
+    "projects/react"
   ],
   "scripts": {
     "ng": "ng",
-    "start": "ng serve demo",
-    "build": "ng build",
     "build:core": "tsc -p projects/core/tsconfig.json",
+    "build:angular": "npm run build:core && ng build angular",
     "build:react": "npm run build:core && tsc -p projects/react/tsconfig.json",
-    "build:lib": "npm run build:core && ng build ngx-kerusi-seatmap",
-    "build:demo": "ng build demo",
+    "build:angular-demo": "ng build angular-demo",
     "build:react-demo": "vite build --config projects/react-demo/vite.config.ts",
+    "start:angular": "ng serve angular-demo",
     "start:react": "vite --config projects/react-demo/vite.config.ts",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
     "test:core": "vitest run --root projects/core",
-    "test:lib": "ng test ngx-kerusi-seatmap --watch=false",
-    "test:demo": "ng test demo --watch=false",
+    "test:angular": "ng test angular --watch=false",
+    "test:angular-demo": "ng test angular-demo --watch=false",
     "test:react": "vitest run --root projects/react",
-    "test:ci": "npm run test:core && npm run test:lib && npm run test:demo && npm run test:react"
+    "test:ci": "npm run test:core && npm run test:angular && npm run test:angular-demo && npm run test:react"
   },
   "private": true,
   "packageManager": "npm@11.16.0",
-  "dependencies": {
+  "devDependencies": {
+    "@angular/build": "^22.1.4",
+    "@angular/cli": "^22.1.4",
     "@angular/common": "^22.1.0",
     "@angular/compiler": "^22.1.0",
+    "@angular/compiler-cli": "^22.1.0",
     "@angular/core": "^22.1.0",
     "@angular/forms": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
     "@angular/router": "^22.1.0",
-    "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
-  },
-  "devDependencies": {
-    "@angular/build": "^22.1.4",
-    "@angular/cli": "^22.1.4",
-    "@angular/compiler-cli": "^22.1.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -51,6 +45,8 @@
     "prettier": "^3.8.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",
     "vitest": "^4.0.8"

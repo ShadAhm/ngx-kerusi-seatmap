@@ -18,10 +18,10 @@
   "author": "Arshad Ahmad",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ShadAhm/ngx-kerusi-seatmap.git",
+    "url": "https://github.com/ShadAhm/kerusiweb.git",
     "directory": "projects/core"
   },
-  "homepage": "https://github.com/ShadAhm/ngx-kerusi-seatmap",
+  "homepage": "https://github.com/ShadAhm/kerusiweb",
   "type": "module",
   "sideEffects": false,
   "exports": {

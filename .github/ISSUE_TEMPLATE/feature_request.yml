@@ -1,0 +1,40 @@
+name: Feature request
+description: Something the library should be able to do and cannot.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Proposals about what the **Kerusi format** should express belong on
+        [ShadAhm/kerusi](https://github.com/ShadAhm/kerusi). This repository
+        decides how a conformant document is rendered and interacted with.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package would this land in?
+      description: >
+        The rule of thumb: if a second binding would have to write the same code
+        again, it belongs in core. See
+        [docs/architecture.md](https://github.com/ShadAhm/kerusiweb/blob/master/docs/architecture.md).
+      options:
+        - '@kerusiweb/core'
+        - '@kerusiweb/angular'
+        - '@kerusiweb/react'
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The situation, not the solution — it often has a shorter path.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: A rough API sketch is welcome, and so is "no idea, here's the problem".

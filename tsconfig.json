@@ -1,5 +1,6 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+/* Workspace-wide TypeScript options, shared by every package.
+   Framework-specific compiler options live in tsconfig.angular.json and in
+   each package's own tsconfig — nothing here may assume a framework. */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -8,10 +9,10 @@
     "noImplicitReturns": true,
     "paths": {
       "@kerusiweb/core": ["./projects/core/src/public-api.ts"],
+      "@kerusiweb/angular": ["./projects/angular/src/public-api.ts"],
       "@kerusiweb/react": ["./projects/react/src/public-api.ts"],
       "@kerusi/demo-scenarios": ["./projects/demo-scenarios/src/index.ts"],
-      "@kerusi/demo-scenarios/*": ["./projects/demo-scenarios/src/*"],
-      "ngx-kerusi-seatmap": ["./projects/ngx-kerusi-seatmap/src/public-api.ts"]
+      "@kerusi/demo-scenarios/*": ["./projects/demo-scenarios/src/*"]
     },
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
@@ -20,11 +21,6 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve"
-  },
-  "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true
   },
   "files": [],
   "references": [
@@ -35,16 +31,16 @@
       "path": "./projects/react/tsconfig.json"
     },
     {
-      "path": "./projects/ngx-kerusi-seatmap/tsconfig.lib.json"
+      "path": "./projects/angular/tsconfig.lib.json"
     },
     {
-      "path": "./projects/ngx-kerusi-seatmap/tsconfig.spec.json"
+      "path": "./projects/angular/tsconfig.spec.json"
     },
     {
-      "path": "./projects/demo/tsconfig.app.json"
+      "path": "./projects/angular-demo/tsconfig.app.json"
     },
     {
-      "path": "./projects/demo/tsconfig.spec.json"
+      "path": "./projects/angular-demo/tsconfig.spec.json"
     }
   ]
 }

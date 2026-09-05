@@ -6,12 +6,12 @@ code, and use it to decide where new code goes.
 
 ```
 projects/
-  core/                → @kerusiweb/core    pure TypeScript, no framework
-  ngx-kerusi-seatmap/  → ngx-kerusi-seatmap Angular binding
-  react/               → @kerusiweb/react   React binding
-  demo/                                     the Angular demo app
-  react-demo/                               the React demo app
-  demo-scenarios/                           the venues both demos show
+  core/            → @kerusiweb/core     pure TypeScript, no framework
+  angular/         → @kerusiweb/angular  Angular binding
+  react/           → @kerusiweb/react    React binding
+  angular-demo/                          the Angular demo app
+  react-demo/                            the React demo app
+  demo-scenarios/                        the venues both demos show
 ```
 
 Every binding depends on `@kerusiweb/core` as a **peer** dependency, so an
@@ -19,7 +19,7 @@ application installs one binding plus core and there is exactly one copy of the
 format types in the graph:
 
 ```bash
-npm install @kerusiweb/core ngx-kerusi-seatmap   # Angular
+npm install @kerusiweb/core @kerusiweb/angular   # Angular
 npm install @kerusiweb/core @kerusiweb/react     # React
 ```
 
@@ -105,9 +105,14 @@ otherwise have been retyped verbatim:
 
 ## Build order
 
+The workspace root `tsconfig.json` holds only framework-neutral options; the
+Angular-only `angularCompilerOptions` sit in `tsconfig.angular.json`, which just
+the Angular binding and demo extend. Core and the React binding extend the
+neutral root directly and never see them.
+
 Core is a plain `tsc` build and every binding resolves it through the npm
 workspace symlink to `projects/core/dist`, so **core must build first**.
-`build:lib` and `build:react` each chain it. Both bindings set `"paths": {}` in
+`build:angular` and `build:react` each chain it. Both bindings set `"paths": {}` in
 their build tsconfig deliberately: it cancels the workspace-root source alias so
 `@kerusiweb/core` stays an external peer rather than being compiled into the
 binding's own output.
@@ -116,17 +121,24 @@ binding's own output.
 `styles.css` sits at the package root rather than under `src/`, so it ships via
 `files` without a copy step and `exports` can name it directly.
 
-| Command                    | Does                                             |
-| -------------------------- | ------------------------------------------------ |
-| `npm run build:core`       | `tsc -p projects/core/tsconfig.json`             |
-| `npm run build:lib`        | core, then `ng build ngx-kerusi-seatmap`         |
-| `npm run build:react`      | core, then `tsc -p projects/react/tsconfig.json` |
-| `npm run build:demo`       | the Angular demo                                 |
-| `npm run build:react-demo` | the React demo (Vite)                            |
+| Command                      | Does                                             |
+| ---------------------------- | ------------------------------------------------ |
+| `npm run build:core`         | `tsc -p projects/core/tsconfig.json`             |
+| `npm run build:angular`      | core, then `ng build angular`                    |
+| `npm run build:react`        | core, then `tsc -p projects/react/tsconfig.json` |
+| `npm run build:angular-demo` | the Angular demo                                 |
+| `npm run build:react-demo`   | the React demo (Vite)                            |
 
 Both demos run against **source**, not the built packages — the Angular demo
 through the root tsconfig's path aliases, the React demo through matching Vite
 aliases — so a change in core or in a binding hot-reloads in either.
-| `npm run test:core` | `vitest run --root projects/core` |
-| `npm run test:lib` | Angular's unit-test builder |
-| `npm run test:ci` | all three test suites |
+
+## Test commands
+
+| Command                     | Does                                    |
+| --------------------------- | --------------------------------------- |
+| `npm run test:core`         | `vitest run --root projects/core`       |
+| `npm run test:angular`      | Angular's unit-test builder, on the lib |
+| `npm run test:angular-demo` | the same builder, on the demo app       |
+| `npm run test:react`        | `vitest run --root projects/react`      |
+| `npm run test:ci`           | all four, in that order                 |

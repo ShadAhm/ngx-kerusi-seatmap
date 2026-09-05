@@ -4,7 +4,7 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "start",
+      "script": "start:angular",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -22,7 +22,7 @@
     },
     {
       "type": "npm",
-      "script": "test",
+      "script": "start:react",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -30,13 +30,18 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": {
-            "regexp": "Changes detected"
+            "regexp": "vite v"
           },
           "endsPattern": {
-            "regexp": "bundle generation (complete|failed)"
+            "regexp": "ready in"
           }
         }
       }
+    },
+    {
+      "type": "npm",
+      "script": "test:ci",
+      "problemMatcher": ["$tsc"]
     }
   ]
 }

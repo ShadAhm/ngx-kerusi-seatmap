@@ -5,7 +5,7 @@ import {
   KerusiViolation,
   summarizeSelection,
 } from '@kerusiweb/core';
-import { KerusiSeatmapComponent, SeatDisallowed } from 'ngx-kerusi-seatmap';
+import { KerusiSeatmapComponent, SeatDisallowed } from '@kerusiweb/angular';
 import { DEMO_LOCALES, Scenario, SCENARIOS } from '@kerusi/demo-scenarios';
 
 const THEME_STORAGE_KEY = 'kerusi-demo-theme';

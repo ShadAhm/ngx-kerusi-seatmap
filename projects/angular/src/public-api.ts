@@ -1,5 +1,5 @@
 /*
- * Public API Surface of ngx-kerusi-seatmap
+ * Public API Surface of @kerusiweb/angular
  *
  * The Angular binding only. Document types, the render model and the view
  * helpers live in @kerusiweb/core — import them from there.

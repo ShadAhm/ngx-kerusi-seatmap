@@ -17,5 +17,5 @@ jobs:
       - run: npm ci
       - run: npm run build:core
       - run: npm run test:ci
-      - run: npm run build:lib
+      - run: npm run build:angular
       - run: npm run build:react

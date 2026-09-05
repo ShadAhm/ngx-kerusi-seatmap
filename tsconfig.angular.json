@@ -1,0 +1,12 @@
+/* Angular-only compiler options, layered on the framework-neutral workspace
+   root. Only the Angular binding and the Angular demo extend this — core and
+   the React binding must never see it.
+   See https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "extends": "./tsconfig.json",
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  }
+}

@@ -1,0 +1,67 @@
+name: Bug report
+description: A seat map renders, validates or behaves incorrectly.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. If your question is about what the **format**
+        should say rather than how this library renders it, please open it on
+        [ShadAhm/kerusi](https://github.com/ShadAhm/kerusi) instead.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package?
+      description: If you are not sure, pick "Not sure" — narrowing it down is our job.
+      options:
+        - '@kerusiweb/core'
+        - '@kerusiweb/angular'
+        - '@kerusiweb/react'
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: The package versions, and your framework version.
+      placeholder: '@kerusiweb/core 1.1.0, @kerusiweb/react 1.1.0, React 19.2'
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: documents
+    attributes:
+      label: The documents
+      description: >
+        The smallest `KerusiMap` / `KerusiState` that reproduces it. This is
+        almost always the fastest path to a fix — the documents are plain JSON,
+        so they drop straight into a test.
+      render: json
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: A link to a reproduction, or the steps to see it.
+
+  - type: checkboxes
+    id: both-bindings
+    attributes:
+      label: Does it happen in both bindings?
+      description: >
+        Optional, but useful: the two bindings emit identical SVG for the same
+        documents, so a bug in only one of them is a different bug from a bug in
+        both.
+      options:
+        - label: I checked the other binding, or the demo for it, and the behaviour is the same
+        - label: It happens in only one binding

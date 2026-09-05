@@ -1,4 +1,4 @@
-name: Deploy demo
+name: Deploy demos
 
 on:
   push:
@@ -18,12 +18,28 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build:demo -- --base-href /ngx-kerusi-seatmap/
-      # SPA fallback so refreshes on deep links resolve
-      - run: cp dist/demo/browser/index.html dist/demo/browser/404.html
+
+      # Each demo is served from its own sub-path so neither framework owns the
+      # root; the landing page below links to both.
+      - run: npm run build:angular-demo -- --base-href /kerusiweb/angular/
+      - name: Build the React demo
+        run: npm run build:react-demo
+        env:
+          DEMO_BASE_HREF: /kerusiweb/react/
+
+      - name: Assemble the Pages tree
+        run: |
+          mkdir -p dist/pages
+          cp -r dist/angular-demo/browser dist/pages/angular
+          cp -r dist/react-demo dist/pages/react
+          # SPA fallback so refreshes on deep links resolve, per demo
+          cp dist/pages/angular/index.html dist/pages/angular/404.html
+          cp dist/pages/react/index.html dist/pages/react/404.html
+          cp .github/pages/index.html dist/pages/index.html
+
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist/demo/browser
+          publish_dir: dist/pages
           publish_branch: gh-pages
           force_orphan: true
