@@ -11,8 +11,10 @@ browser, in a build step, or on a server.
 npm install @kerusiweb/core
 ```
 
-For an Angular UI on top of it, install
-[`ngx-kerusi-seatmap`](https://www.npmjs.com/package/ngx-kerusi-seatmap) too.
+For a UI on top of it, add the binding for your framework:
+[`@kerusiweb/angular`](https://www.npmjs.com/package/@kerusiweb/angular) or
+[`@kerusiweb/react`](https://www.npmjs.com/package/@kerusiweb/react). Both
+expose the same surface and emit the same SVG.
 
 ## What's in it
 

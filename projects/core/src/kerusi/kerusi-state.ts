@@ -6,7 +6,7 @@ import { KerusiState, KerusiStateDelta, SeatStatus } from './kerusi-state.model.
  *
  * These are pure functions over an immutable {@link KerusiState}. A framework
  * binding may wrap them in whatever reactive primitive it prefers — see
- * `KerusiStateStore` in `ngx-kerusi-seatmap` for the Angular signal-backed
+ * `KerusiStateStore` in `@kerusiweb/angular` for the Angular signal-backed
  * version — but nothing here needs one.
  */
 

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: The Kerusi format itself
+    url: https://github.com/ShadAhm/kerusi
+    about: Questions or proposals about what the format should express, rather than how this library renders it.
+  - name: Live demos
+    url: https://shadahm.github.io/kerusiweb/
+    about: The Angular and React demos, rendering the same venue documents.

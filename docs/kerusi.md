@@ -1,19 +1,22 @@
 # Rendering Kerusi documents
 
-`ngx-kerusi-seatmap` consumes the [**Kerusi Seat Map & Availability
+`@kerusiweb/core` consumes the [**Kerusi Seat Map & Availability
 Format**](https://github.com/ShadAhm/kerusi) natively: a static `KerusiMap`
 (layout, seat types, pricing) plus a live `KerusiState` (availability) go
-straight into `<kerusi-seatmap>`.
+straight into the seat-map component of whichever binding you install.
 
 Kerusi is a vendor-neutral, domain-agnostic JSON format — cinema, flight, bus,
 theatre, stadium, train — and this page shows how each part of it turns into
 something on screen. See the standard for the normative rules.
 
+Everything below is framework-neutral unless it says otherwise: the documents
+are just JSON, the resolution rules live in core, and the component inputs are
+named identically in every binding — written `[input]="value"` in an Angular
+template and `input={value}` as a React prop.
+
 ## The minimum
 
 ```ts
-import { Component } from '@angular/core';
-import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
 import type { KerusiMap, KerusiState } from '@kerusiweb/core';
 
 const map: KerusiMap = {
@@ -137,7 +140,7 @@ sections: [
 ```
 
 Sections render in `Section.index` order. Restrict or reorder them with
-`[sectionIds]`, and tune individual ones with `[sectionOverrides]`.
+`sectionIds`, and tune individual ones with `sectionOverrides`.
 
 ## Rows and vertical space (§4.2)
 
@@ -237,7 +240,7 @@ const { seats, total, unpriced } = summarizeSelection(model, selection());
 formatMoney(total, 'ms-MY'); // "RM 104.00"
 ```
 
-`[showLegend]="true"` renders a key from `KerusiMap.legend` and `priceTiers`.
+`showLegend` renders a key from `KerusiMap.legend` and `priceTiers`.
 
 ## Companions (§4.6)
 
@@ -251,7 +254,7 @@ refused with `reason: 'companion-unavailable'` rather than half-taken.
 { id: 'L2', row: 'L', x: 36, y: 89, type: 'sofa', companions: ['L1'] },
 ```
 
-Set `[companionMode]="'independent'"` to handle the pairing yourself.
+Set `companionMode` to `'independent'` to handle the pairing yourself.
 
 ## Accessibility (§4.3.4)
 
@@ -288,7 +291,7 @@ localized into languages you did not ask for still renders something.
 legend: [{ id: 'standard', label: { en: 'Standard', 'ms-MY': 'Biasa' } }];
 ```
 
-`[locale]` overrides `KerusiMap.locale`. `[rtl]` defaults to `auto` and derives
+`locale` overrides `KerusiMap.locale`. `rtl` defaults to `auto` and derives
 the direction from the resolved locale, mirroring the layout and the arrow keys
 while leaving `col` order — and so reading order — untouched.
 
@@ -298,21 +301,31 @@ A `KerusiState` is sparse: a seat absent from `seats` is available. Statuses are
 `available`, `held` (with an optional `holdExpires`), `booked` and `blocked`;
 all four render distinctly and only `available` is selectable by default.
 
-For a push transport, `KerusiStateStore` applies `KerusiStateDelta` documents:
+For a push transport, each binding wraps core's `applyStateDeltaOrdered` in its
+own reactive primitive — `KerusiStateStore` in `@kerusiweb/angular`,
+`useKerusiState` in `@kerusiweb/react` — and both report the same outcome for a
+`KerusiStateDelta`:
 
 ```ts
+// Angular
 const store = new KerusiStateStore(initialState);
 const result = store.apply(delta);
 // 'applied' | 'stale' | 'duplicate' | 'gap' | 'scope-mismatch'
 ```
 
-Set `[expireHolds]="true"` to have a lapsed hold revert to available on screen.
+```tsx
+// React
+const { state, apply } = useKerusiState(initialState);
+const result = apply(delta); // the same five outcomes
+```
+
+Set `expireHolds` to have a lapsed hold revert to available on screen.
 
 ## Sessions (§5.3)
 
 A `KerusiSession` joins a reusable map to a specific showtime, and a
 `KerusiState` may reference it by `sessionId` instead of `mapId`. Pass it as
-`[session]` and the library checks the joins actually resolve.
+`session` and the library checks the joins actually resolve.
 
 ```ts
 const session: KerusiSession = {

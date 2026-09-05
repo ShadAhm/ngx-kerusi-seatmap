@@ -15,7 +15,7 @@ describe('App', () => {
   });
 
   it('names the library', () => {
-    expect(el.querySelector('h1')?.textContent).toContain('ngx-kerusi-seatmap');
+    expect(el.querySelector('h1')?.textContent).toContain('@kerusiweb/angular');
   });
 
   it('offers a tab per scenario', () => {

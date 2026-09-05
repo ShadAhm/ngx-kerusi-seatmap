@@ -5,7 +5,7 @@ implements, and which it does not.
 
 |               |                                                                                                                           |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Library       | `ngx-kerusi-seatmap` 1.1.0 (this repository)                                                                              |
+| Library       | `@kerusiweb/core` 1.1.0 (this repository)                                                                                 |
 | Spec assessed | [Kerusi standard v1.0.0-draft](https://github.com/ShadAhm/kerusi/blob/master/RFC/kerusi-standard_v1.0.0-draft.md), rev 13 |
 | Date          | 2026-08-29                                                                                                                |
 

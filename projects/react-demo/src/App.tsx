@@ -285,7 +285,7 @@ export function App() {
       </main>
 
       <footer className="site-footer">
-        <a href="https://github.com/ShadAhm/ngx-kerusi-seatmap">GitHub</a>
+        <a href="https://github.com/ShadAhm/kerusiweb">GitHub</a>
         <span>&middot;</span>
         <a href="https://www.npmjs.com/package/@kerusiweb/react">npm</a>
         <span>&middot;</span>

@@ -7,20 +7,20 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "ngx-kerusi-seatmap": {
+    "angular": {
       "projectType": "library",
-      "root": "projects/ngx-kerusi-seatmap",
-      "sourceRoot": "projects/ngx-kerusi-seatmap/src",
+      "root": "projects/angular",
+      "sourceRoot": "projects/angular/src",
       "prefix": "kerusi",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/ngx-kerusi-seatmap/tsconfig.lib.prod.json"
+              "tsConfig": "projects/angular/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ngx-kerusi-seatmap/tsconfig.lib.json"
+              "tsConfig": "projects/angular/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -28,32 +28,30 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/ngx-kerusi-seatmap/tsconfig.spec.json"
+            "tsConfig": "projects/angular/tsconfig.spec.json"
           }
         }
       }
     },
-    "demo": {
+    "angular-demo": {
       "projectType": "application",
       "schematics": {},
-      "root": "projects/demo",
-      "sourceRoot": "projects/demo/src",
+      "root": "projects/angular-demo",
+      "sourceRoot": "projects/angular-demo/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "projects/demo/src/main.ts",
-            "tsConfig": "projects/demo/tsconfig.app.json",
+            "browser": "projects/angular-demo/src/main.ts",
+            "tsConfig": "projects/angular-demo/tsconfig.app.json",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/demo/public"
+                "input": "projects/angular-demo/public"
               }
             ],
-            "styles": [
-              "projects/demo/src/styles.css"
-            ]
+            "styles": ["projects/angular-demo/src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -83,10 +81,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "demo:build:production"
+              "buildTarget": "angular-demo:build:production"
             },
             "development": {
-              "buildTarget": "demo:build:development"
+              "buildTarget": "angular-demo:build:development"
             }
           },
           "defaultConfiguration": "development"

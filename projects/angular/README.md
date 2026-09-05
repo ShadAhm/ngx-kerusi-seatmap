@@ -1,10 +1,10 @@
-# ngx-kerusi-seatmap
+# @kerusiweb/angular
 
 An Angular seat map that renders [Kerusi](https://github.com/ShadAhm/kerusi)
 documents as interactive, accessible inline SVG.
 
 ```bash
-npm install @kerusiweb/core ngx-kerusi-seatmap
+npm install @kerusiweb/core @kerusiweb/angular
 ```
 
 Requires Angular 22+. Standalone, signal-based, zoneless-friendly.
@@ -20,7 +20,7 @@ framework-free; import them from there.
 ## `<kerusi-seatmap>`
 
 ```ts
-import { KerusiSeatmapComponent } from 'ngx-kerusi-seatmap';
+import { KerusiSeatmapComponent } from '@kerusiweb/angular';
 
 @Component({ imports: [KerusiSeatmapComponent], /* ... */ })
 ```
@@ -312,7 +312,7 @@ for (const v of checkKerusiMap(map)) {
 ### Live availability
 
 ```ts
-import { KerusiStateStore } from 'ngx-kerusi-seatmap';
+import { KerusiStateStore } from '@kerusiweb/angular';
 
 const store = new KerusiStateStore(initialState);
 socket.onmessage = (e) => {

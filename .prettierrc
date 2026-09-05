@@ -3,7 +3,8 @@
   "singleQuote": true,
   "overrides": [
     {
-      "files": "*.html",
+      "comment": "Angular template syntax only parses under the angular parser; plain HTML elsewhere (the React demo's index.html) must not go through it.",
+      "files": ["projects/angular/**/*.html", "projects/angular-demo/**/*.html"],
       "options": {
         "parser": "angular"
       }
